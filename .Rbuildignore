@@ -1,0 +1,10 @@
+^renv$
+^renv\.lock$
+^.*\.Rproj$
+^\.Rproj\.user$
+^inst/powerpoint/*.png$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+^.gitlab-ci.yml
+^scripts$
