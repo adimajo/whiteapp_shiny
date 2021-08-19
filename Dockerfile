@@ -1,4 +1,4 @@
-FROM rocker/shiny:4.0.5
+FROM docker-remote.registry.saas.cagip.group.gca/library/rocker/shiny:4.0.5
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
 git-core \
