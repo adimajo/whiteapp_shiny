@@ -1,9 +1,40 @@
-image: r-base:4.0.5
+.common_r: &common_r
+  image:
+    name: docker-remote.registry.saas.cagip.group.gca/library/r-base:4.0.5
+
+.ci_tools: &ci_tools
+  image:
+    name: layer-kraft.registry.saas.cagip.group.gca/ci-tools:latest
+
+.common_tag: &common_tag
+  tags:
+  - kubernetes
+
+.common_deploy: &common_deploy
+  before_script:
+    # Install ssh-agent if not already installed, it is required by Docker.
+    # (change apt-get to yum if you use a CentOS-based image)
+    - 'which ssh-agent || ( apk --update add openssh-client )'
+
+    # Run ssh-agent (inside the build environment)
+    - eval $(ssh-agent -s)
+
+    # Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
+    - echo "$BOOT_GITLAB_SSH_KEY" |  tr -d ' ' | base64 -d | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan gitlab.ca.cib >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+    - apk add --no-cache git
+    - git config --global user.name "$GITLAB_USER_NAME"
+    - git config --global user.email "$GITLAB_USER_EMAIL"
 
 stages:
   - lint
   - build
   - document
+  - versionning
+  - sonar_check
   - check
   - test
   - coverage
@@ -24,6 +55,8 @@ variables:
 lint:
   extends: .before_script_template
   stage: lint
+  <<: *common_r
+  <<: *common_tag
   script:
     - r -e "install.packages('styler')"
     - r inst/lint.R
@@ -31,18 +64,34 @@ lint:
 buildbinary:
   extends: .before_script_template
   stage: build
+  <<: *common_r
+  <<: *common_tag
   script:
     - r -e 'devtools::build(binary = TRUE)'
 
 documentation:
   extends: .before_script_template
   stage: document
+  <<: *common_r
+  <<: *common_tag
   script:
     - apt-get -y install libfontconfig1-dev
     - apt-get -y install libharfbuzz-dev libfribidi-dev
     - apt-get -y install libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev
     - r -e "install.packages('pkgdown')"
     - r inst/document.R
+
+generate_tag:
+  artifacts:
+    paths:
+      - build.env
+  stage: versionning
+  <<: *common_r
+  <<: *common_tag
+  only:
+   - master
+  script:
+    - echo export APPLICATION_TAG_VERSION=`R 'library(WhiteAppRShiny); find_packages_versions()'` >> build.env
 
 checkerrors:
   extends: .before_script_template
@@ -89,21 +138,67 @@ coverage:
     - r -e 'renv::restore()'
     - r -e 'print(devtools::test_coverage())'
 
-check_mswin:
-  extends: .before_script_template
-  stage: checkrhub
+quality_check:
+  stage: sonar_check
+  image:
+    name: docker-remote.registry.saas.cagip.group.gca/sonarsource/sonar-scanner-cli:4.2
+  <<: *common_tag
+  variables:
+    SONAR_TOKEN: "${BOOT_SONAR_TOKEN}"
+    SONAR_HOST_URL: "${BOOT_SONAR_INSTANCE}"
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar" # Defines the location of the analysis task cache
+    GIT_DEPTH: 0 # Tells git to fetch all the branches of the project, required by the analysis task
+    SONAR_SCANNER_OPTS: "-Djavax.net.ssl.trustStore=certificates/cacerts"
   script:
-    - r -e 'devtools::install()'
-    - Rscript inst/rhubcheck.R "windows-x86_64-devel" "$RHUB_TOKEN"
+    - . ./build.env
+    - 'echo GENERATED TAG : $APPLICATION_TAG_VERSION'
+    - sonar-scanner -Dsonar.qualitygate.wait=true -Dsonar.projectKey=$BOOT_SONAR_KEY -Dsonar.projectVersion=$APPLICATION_TAG_VERSION
+  only:
+   - master
 
-check_macos:
-  extends: .before_script_template
-  stage: checkrhub
+build whiteapp:
+  stage: build
+  <<: *common_tag
+  image:
+    name: docker-remote.registry.saas.cagip.group.gca/kaniko-project/executor:debug-v1.0.0
+    entrypoint: [""]
+  variables:
+    TEST_STATIC: 0
+    TEST_DB: 1
   script:
-    - r -e 'devtools::install()'
-    - Rscript inst/rhubcheck.R "macos-highsierra-release-cran" "$RHUB_TOKEN"
+    - . ./build.env
+    - mkdir -p /kaniko/.docker
+    - |-
+       KANIKOPROXYBUILDARGS=""
+       KANIKOCFG="{\"auths\":{\"https://$BOOT_ARTI_SCRATCH_REGISTRY.$BOOT_ARTI_REGISTRY\":{\"auth\":\"$(echo -n $BOOT_ARTI_USER:$BOOT_ARTI_PASSWORD | base64 | tr -d '\n')\"}}}"
+       if [ "x${http_proxy}" != "x" -o "x${https_proxy}" != "x" ]; then
+         KANIKOCFG="${KANIKOCFG}, \"proxies\": { \"default\": { \"httpProxy\": \"${http_proxy}\", \"httpsProxy\": \"${https_proxy}\", \"noProxy\": \"${no_proxy}\"}}"
+         KANIKOPROXYBUILDARGS="--build-arg http_proxy=${http_proxy} --build-arg https_proxy=${https_proxy} --build-arg no_proxy=${no_proxy}"
+       fi
+       KANIKOCFG="${KANIKOCFG} }"
+       echo "${KANIKOCFG}" >> /kaniko/.docker/config.json
+    - wget -qO - http://crl-priv-pki.credit-agricole.fr/ca/cacreditagricoleserver.crt >> /kaniko/ssl/certs/additional-ca-cert-bundle.crt
+    - /kaniko/executor --context . --dockerfile Dockerfile $KANIKOPROXYBUILDARGS --destination $BOOT_ARTI_SCRATCH_REGISTRY.$BOOT_ARTI_REGISTRY/$BOOT_ARTI_REPO:$APPLICATION_TAG_VERSION
+  only:
+   - master
 
-deploy:
-  stage: deploy
+deploy_dev:
+  stage: deploy_dev
+  <<: *ci_tools
+  <<: *common_tag
+  <<: *common_deploy
   script:
-    - exit 1
+    - . ./build.env
+    - 'echo GENERATED TAG : $APPLICATION_TAG_VERSION'
+    - git clone $BOOT_GITLAB_DEPLOY_REPO yaml_deploy_folder
+    - cd yaml_deploy_folder/dev
+    - kustomize edit set image $BOOT_ARTI_SCRATCH_REGISTRY.$BOOT_ARTI_REGISTRY/$BOOT_ARTI_REPO=$BOOT_ARTI_SCRATCH_REGISTRY.$BOOT_ARTI_REGISTRY/$BOOT_ARTI_REPO:$APPLICATION_TAG_VERSION
+    - |-
+        if ! git diff-index --quiet HEAD --; then
+            git commit -am "Rollout version $APPLICATION_TAG_VERSION"
+            git push
+        else
+            echo "Nothing to push"
+        fi
+  only:
+   - master
