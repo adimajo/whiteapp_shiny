@@ -39,7 +39,7 @@ stages:
   - test
   - coverage
   - checkrhub
-  - deploy
+  - deploy_dev
 
 variables:
   _R_CHECK_CRAN_INCOMING_: "false"
