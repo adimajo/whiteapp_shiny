@@ -92,7 +92,7 @@ generate_tag:
   only:
    - master
   script:
-    - echo export APPLICATION_TAG_VERSION=`r -e 'library(WhiteAppRShiny); find_packages_versions()'` >> build.env
+    - echo export APPLICATION_TAG_VERSION=`rscript -e 'library(WhiteAppRShiny); cat(find_packages_versions())'` >> build.env
 
 checkerrors:
   extends: .before_script_template
