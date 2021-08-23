@@ -87,12 +87,16 @@ documentation:
     - r inst/pipeline/document.R
 
 checkerrors:
+  <<: *common_r
+  <<: *common_tag
   extends: .before_script_template
   stage: check
   script:
     - r -e 'if (!identical(devtools::check(document = FALSE, args = "--no-tests", error_on = "never")[["errors"]], character(0))) stop("Check with Errors")'
 
 checkwarnings:
+  <<: *common_r
+  <<: *common_tag
   extends: .before_script_template
   stage: check
   script:
@@ -100,6 +104,8 @@ checkwarnings:
   allow_failure: true
 
 checknotes:
+  <<: *common_r
+  <<: *common_tag
   extends: .before_script_template
   stage: check
   script:
@@ -107,12 +113,16 @@ checknotes:
   allow_failure: true
 
 unittestserrors:
+  <<: *common_r
+  <<: *common_tag
   extends: .before_script_template
   stage: test
   script:
     - r -e 'if (any(as.data.frame(devtools::test())[["error"]])) stop("Some tests failed.")'
 
 unittestswarnings:
+  <<: *common_r
+  <<: *common_tag
   extends: .before_script_template
   stage: test
   script:
@@ -120,6 +130,8 @@ unittestswarnings:
   allow_failure: true
 
 coverage:
+  <<: *common_r
+  <<: *common_tag
   extends: .before_script_template
   stage: coverage
   script:
