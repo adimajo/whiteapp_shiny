@@ -33,7 +33,6 @@ stages:
   - lint
   - build package
   - document
-  - versionning
   - sonar_check
   - check
   - test
@@ -63,12 +62,17 @@ lint:
     - r inst/pipeline/lint.R
 
 buildbinary:
+  artifacts:
+    paths:
+      - build.env
   extends: .before_script_template
   stage: build package
   <<: *common_r
   <<: *common_tag
   script:
     - r -e 'devtools::build(binary = TRUE)'
+    - r -e 'devtools::install()'
+    - echo export APPLICATION_TAG_VERSION=`r -e 'library(WhiteAppRShiny); cat(find_packages_versions())'` >> build.env
 
 documentation:
   extends: .before_script_template
@@ -81,18 +85,6 @@ documentation:
     - apt-get -y install libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev
     - r -e "install.packages('pkgdown')"
     - r inst/pipeline/document.R
-
-generate_tag:
-  artifacts:
-    paths:
-      - build.env
-  stage: versionning
-  <<: *common_r
-  <<: *common_tag
-  only:
-   - master
-  script:
-    - echo export APPLICATION_TAG_VERSION=`rscript -e 'library(WhiteAppRShiny); cat(find_packages_versions())'` >> build.env
 
 checkerrors:
   extends: .before_script_template
