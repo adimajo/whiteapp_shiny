@@ -9,3 +9,5 @@
 ^.gitlab-ci.yml
 ^scripts$
 ^certificates$
+^build.env$
+^Dockerfile$

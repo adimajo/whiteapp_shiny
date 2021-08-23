@@ -75,6 +75,10 @@ buildbinary:
     - echo export APPLICATION_TAG_VERSION=`r -e 'library(WhiteAppRShiny); cat(find_packages_versions())'` >> build.env
 
 documentation:
+  artifacts:
+    paths:
+      - man
+      - docs
   extends: .before_script_template
   stage: document
   <<: *common_r
@@ -92,7 +96,7 @@ checkerrors:
   extends: .before_script_template
   stage: check
   script:
-    - r -e 'if (!identical(devtools::check(document = FALSE, args = "--no-tests", error_on = "never")[["errors"]], character(0))) stop("Check with Errors")'
+    - r -e 'if (!identical(devtools::check(document = TRUE, args = "--no-tests", error_on = "never")[["errors"]], character(0))) stop("Check with Errors")'
 
 checkwarnings:
   <<: *common_r
@@ -100,7 +104,7 @@ checkwarnings:
   extends: .before_script_template
   stage: check
   script:
-    - r -e 'if (!identical(devtools::check(document = FALSE, args = "--no-tests", error_on = "never")[["warnings"]], character(0))) stop("Check with Warnings")'
+    - r -e 'if (!identical(devtools::check(document = TRUE, args = "--no-tests", error_on = "never")[["warnings"]], character(0))) stop("Check with Warnings")'
   allow_failure: true
 
 checknotes:
@@ -109,7 +113,7 @@ checknotes:
   extends: .before_script_template
   stage: check
   script:
-    - r -e 'if (!identical(devtools::check(document = FALSE, args = "--no-tests", error_on = "never")[["notes"]], character(0))) stop("Check with Notes")'
+    - r -e 'if (!identical(devtools::check(document = TRUE, args = "--no-tests", error_on = "never")[["notes"]], character(0))) stop("Check with Notes")'
   allow_failure: true
 
 unittestserrors:
@@ -141,6 +145,7 @@ coverage:
     - r -e "install.packages('renv')"
     - r -e 'renv::load()'
     - r -e 'renv::restore()'
+    - r -e 'renv::install("covr")'
     - r -e 'print(devtools::test_coverage())'
 
 quality_check:
