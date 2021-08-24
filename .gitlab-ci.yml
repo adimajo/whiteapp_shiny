@@ -147,7 +147,7 @@ coverage:
     - r -e 'renv::restore()'
     - r -e 'renv::install("covr")'
     - r -e 'renv::install("DT")'
-    - r -e 'print(devtools::test_coverage())'
+    - r -e 'print(covr::package_coverage(quiet = FALSE, clean = FALSE))'
 
 quality_check:
   stage: sonar_check
