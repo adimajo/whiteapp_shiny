@@ -60,6 +60,7 @@ lint:
   script:
     - r -e "install.packages('styler')"
     - r inst/pipeline/lint.R
+  skip: true
 
 buildbinary:
   artifacts:
@@ -73,6 +74,7 @@ buildbinary:
     - r -e 'devtools::build(binary = TRUE)'
     - r -e 'devtools::install()'
     - echo export APPLICATION_TAG_VERSION=`r -e 'library(WhiteAppRShiny); cat(find_packages_versions())'` >> build.env
+  skip: true
 
 documentation:
   artifacts:
@@ -89,6 +91,7 @@ documentation:
     - apt-get -y install libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev
     - r -e "install.packages('pkgdown')"
     - r inst/pipeline/document.R
+  skip: true
 
 checkerrors:
   <<: *common_r
@@ -97,6 +100,7 @@ checkerrors:
   stage: check
   script:
     - r -e 'if (!identical(devtools::check(document = TRUE, args = "--no-tests", error_on = "never")[["errors"]], character(0))) stop("Check with Errors")'
+  skip: true
 
 checkwarnings:
   <<: *common_r
@@ -106,6 +110,7 @@ checkwarnings:
   script:
     - r -e 'if (!identical(devtools::check(document = TRUE, args = "--no-tests", error_on = "never")[["warnings"]], character(0))) stop("Check with Warnings")'
   allow_failure: true
+  skip: true
 
 checknotes:
   <<: *common_r
@@ -115,6 +120,7 @@ checknotes:
   script:
     - r -e 'if (!identical(devtools::check(document = TRUE, args = "--no-tests", error_on = "never")[["notes"]], character(0))) stop("Check with Notes")'
   allow_failure: true
+  skip: true
 
 unittestserrors:
   <<: *common_r
@@ -123,6 +129,7 @@ unittestserrors:
   stage: test
   script:
     - r -e 'if (any(as.data.frame(devtools::test())[["error"]])) stop("Some tests failed.")'
+  skip: true
 
 unittestswarnings:
   <<: *common_r
@@ -132,6 +139,7 @@ unittestswarnings:
   script:
     - r -e 'if (sum(as.data.frame(devtools::test())[["warning"]]) > 0) stop("Some tests yielded a warning.")'
   allow_failure: true
+  skip: true
 
 coverage:
   <<: *common_r
@@ -148,6 +156,7 @@ coverage:
     - r -e 'renv::install("covr")'
     - r -e 'renv::install("DT")'
     - r -e 'print(covr::package_coverage(quiet = FALSE, clean = FALSE))'
+  skip: true
 
 quality_check:
   stage: sonar_check
@@ -165,7 +174,8 @@ quality_check:
     - 'echo GENERATED TAG : $APPLICATION_TAG_VERSION'
     - sonar-scanner -Dsonar.qualitygate.wait=true -Dsonar.projectKey=$BOOT_SONAR_KEY -Dsonar.projectVersion=$APPLICATION_TAG_VERSION
   only:
-   - master
+    - master
+  skip: true
 
 build whiteapp:
   stage: build docker
@@ -213,3 +223,4 @@ deploy_dev:
         fi
   only:
    - master
+  skip: true
