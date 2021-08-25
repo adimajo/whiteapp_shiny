@@ -60,7 +60,13 @@ lint:
   script:
     - r -e "install.packages('styler')"
     - r inst/pipeline/lint.R
-  skip: true
+  only:
+    refs:
+      - branches
+    changes:
+      - DESCRIPTION
+      - R/*
+      - inst/*
 
 buildbinary:
   artifacts:
@@ -74,7 +80,14 @@ buildbinary:
     - r -e 'devtools::build(binary = TRUE)'
     - r -e 'devtools::install()'
     - echo export APPLICATION_TAG_VERSION=`r -e 'library(WhiteAppRShiny); cat(find_packages_versions())'` >> build.env
-  skip: true
+  only:
+    refs:
+      - branches
+    changes:
+      - Dockerfile
+      - DESCRIPTION
+      - R/*
+      - inst/*
 
 documentation:
   artifacts:
@@ -91,7 +104,13 @@ documentation:
     - apt-get -y install libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev
     - r -e "install.packages('pkgdown')"
     - r inst/pipeline/document.R
-  skip: true
+  only:
+    refs:
+      - branches
+    changes:
+      - DESCRIPTION
+      - R/*
+      - inst/*
 
 checkerrors:
   <<: *common_r
@@ -100,7 +119,13 @@ checkerrors:
   stage: check
   script:
     - r -e 'if (!identical(devtools::check(document = TRUE, args = "--no-tests", error_on = "never")[["errors"]], character(0))) stop("Check with Errors")'
-  skip: true
+  only:
+    refs:
+      - branches
+    changes:
+      - DESCRIPTION
+      - R/*
+      - inst/*
 
 checkwarnings:
   <<: *common_r
@@ -110,7 +135,13 @@ checkwarnings:
   script:
     - r -e 'if (!identical(devtools::check(document = TRUE, args = "--no-tests", error_on = "never")[["warnings"]], character(0))) stop("Check with Warnings")'
   allow_failure: true
-  skip: true
+  only:
+    refs:
+      - branches
+    changes:
+      - DESCRIPTION
+      - R/*
+      - inst/*
 
 checknotes:
   <<: *common_r
@@ -120,7 +151,13 @@ checknotes:
   script:
     - r -e 'if (!identical(devtools::check(document = TRUE, args = "--no-tests", error_on = "never")[["notes"]], character(0))) stop("Check with Notes")'
   allow_failure: true
-  skip: true
+  only:
+    refs:
+      - branches
+    changes:
+      - DESCRIPTION
+      - R/*
+      - inst/*
 
 unittestserrors:
   <<: *common_r
@@ -129,7 +166,13 @@ unittestserrors:
   stage: test
   script:
     - r -e 'if (any(as.data.frame(devtools::test())[["error"]])) stop("Some tests failed.")'
-  skip: true
+  only:
+    refs:
+      - branches
+    changes:
+      - DESCRIPTION
+      - R/*
+      - inst/*
 
 unittestswarnings:
   <<: *common_r
@@ -139,7 +182,13 @@ unittestswarnings:
   script:
     - r -e 'if (sum(as.data.frame(devtools::test())[["warning"]]) > 0) stop("Some tests yielded a warning.")'
   allow_failure: true
-  skip: true
+  only:
+    refs:
+      - branches
+    changes:
+      - DESCRIPTION
+      - R/*
+      - inst/*
 
 coverage:
   <<: *common_r
@@ -156,7 +205,13 @@ coverage:
     - r -e 'renv::install("covr")'
     - r -e 'renv::install("DT")'
     - r -e 'print(covr::package_coverage(quiet = FALSE, clean = FALSE))'
-  skip: true
+  only:
+    refs:
+      - branches
+    changes:
+      - DESCRIPTION
+      - R/*
+      - inst/*
 
 quality_check:
   stage: sonar_check
@@ -174,8 +229,12 @@ quality_check:
     - 'echo GENERATED TAG : $APPLICATION_TAG_VERSION'
     - sonar-scanner -Dsonar.qualitygate.wait=true -Dsonar.projectKey=$BOOT_SONAR_KEY -Dsonar.projectVersion=$APPLICATION_TAG_VERSION
   only:
-    - master
-  skip: true
+    refs:
+      - master
+    changes:
+      - DESCRIPTION
+      - R/*
+      - inst/*
 
 build whiteapp:
   stage: build docker
@@ -201,7 +260,13 @@ build whiteapp:
     - wget -qO - http://crl-priv-pki.credit-agricole.fr/ca/cacreditagricoleserver.crt >> /kaniko/ssl/certs/additional-ca-cert-bundle.crt
     - /kaniko/executor --context . --dockerfile Dockerfile $KANIKOPROXYBUILDARGS --destination $BOOT_ARTI_SCRATCH_REGISTRY.$BOOT_ARTI_REGISTRY/$BOOT_ARTI_REPO:$APPLICATION_TAG_VERSION
   only:
-   - master
+    refs:
+      - master
+    changes:
+      - Dockerfile
+      - DESCRIPTION
+      - R/*
+      - inst/*
 
 deploy_dev:
   stage: deploy_dev
@@ -222,5 +287,10 @@ deploy_dev:
             echo "Nothing to push"
         fi
   only:
-   - master
-  skip: true
+    refs:
+      - master
+    changes:
+      - Dockerfile
+      - DESCRIPTION
+      - R/*
+      - inst/*
