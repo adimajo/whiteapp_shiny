@@ -15,14 +15,18 @@ RUN install2.r remotes renv
 
 RUN addgroup --system shiny && adduser --system --ingroup shiny shiny
 
-COPY ./renv.lock .
+COPY ./Rbuildignore .
+# COPY ./Rprofile .
+# COPY ./renv.lock .
 COPY ./inst .
 COPY ./R .
 COPY ./DESCRIPTION .
 
-RUN Rscript -e "options(renv.consent = TRUE);renv::restore(lockfile = 'renv.lock')"
+# RUN Rscript -e "options(renv.consent = TRUE);renv::restore(lockfile = 'renv.lock')"
 
 RUN Rscript -e "install.packages('devtools')"
+
+RUN ls
 
 RUN Rscript -e "devtools::install()"
 
