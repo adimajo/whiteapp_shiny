@@ -11,7 +11,7 @@ libicu-dev && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 ENV _R_SHLIB_STRIP_=true
 
-RUN install.r remotes renv
+RUN install2.r remotes renv
 
 RUN echo "local(options(shiny.port = 8000, shiny.host = '0.0.0.0'))" > /usr/lib/R/etc/Rprofile.site
 
