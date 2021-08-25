@@ -22,9 +22,9 @@ COPY ./DESCRIPTION .
 
 RUN Rscript -e "options(renv.consent = TRUE);renv::restore(lockfile = 'renv.lock')"
 
-RUN Rscript -e "devtools::install()"
-
 RUN Rscript -e "install.packages('devtools')"
+
+RUN Rscript -e "devtools::install()"
 
 RUN chown shiny:shiny -R .
 
