@@ -20,7 +20,7 @@
     - eval $(ssh-agent -s)
 
     # Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
-    - echo "$BOOT_GITLAB_SSH_KEY" |  tr -d ' ' | base64 -d | ssh-add -
+    - echo "$BOOT_GITLAB_SSH_KEY" | tr -d ' ' | base64 -d | ssh-add -
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
     - ssh-keyscan gitlab.ca.cib >> ~/.ssh/known_hosts
