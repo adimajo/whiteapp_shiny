@@ -13,10 +13,8 @@ ENV _R_SHLIB_STRIP_=true
 
 RUN install2.r remotes renv
 
-RUN addgroup --system shiny && adduser --system --ingroup shiny shiny
-
-COPY ./Rbuildignore .
-# COPY ./Rprofile .
+COPY ./.Rbuildignore .
+# COPY ./.Rprofile .
 # COPY ./renv.lock .
 COPY ./inst .
 COPY ./R .
