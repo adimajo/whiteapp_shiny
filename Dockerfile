@@ -13,20 +13,24 @@ ENV _R_SHLIB_STRIP_=true
 
 RUN install2.r remotes renv
 
-COPY ./.Rbuildignore .
-# COPY ./.Rprofile .
-# COPY ./renv.lock .
-COPY ./inst .
-COPY ./R .
-COPY ./DESCRIPTION .
+MKDIR whiteapp
+
+COPY ./.Rbuildignore whiteapp/
+# COPY ./.Rprofile whiteapp/
+# COPY ./renv.lock whiteapp/
+COPY ./inst whiteapp/
+COPY ./R whiteapp/
+COPY ./DESCRIPTION whiteapp/
 
 # RUN Rscript -e "options(renv.consent = TRUE);renv::restore(lockfile = 'renv.lock')"
 
 RUN Rscript -e "install.packages('devtools')"
 
-RUN ls
+RUN ls -al whiteapp
 
-RUN Rscript -e "devtools::install()"
+RUN R CMD build whiteapp
+
+RUN R CMD install *.tar.gz
 
 RUN chown shiny:shiny -R .
 
