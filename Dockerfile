@@ -32,10 +32,6 @@ RUN R CMD build whiteapp
 
 RUN R CMD INSTALL *.tar.gz
 
-RUN chown shiny:shiny -R .
-
-USER shiny
-
 EXPOSE 8000
 
 CMD ["R", "-e", "WhiteAppRShiny::runDashboard()"]
