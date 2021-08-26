@@ -30,7 +30,7 @@ RUN ls -al whiteapp
 
 RUN R CMD build whiteapp
 
-RUN R CMD install *.tar.gz
+RUN R CMD INSTALL *.tar.gz
 
 RUN chown shiny:shiny -R .
 
