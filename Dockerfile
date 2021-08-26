@@ -13,7 +13,7 @@ ENV _R_SHLIB_STRIP_=true
 
 RUN install2.r remotes renv
 
-MKDIR whiteapp
+RUN mkdir whiteapp
 
 COPY ./.Rbuildignore whiteapp/
 # COPY ./.Rprofile whiteapp/
