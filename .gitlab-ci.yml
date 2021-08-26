@@ -64,6 +64,7 @@ lint:
     refs:
       - branches
     changes:
+      - .gitlab-ci.yml
       - DESCRIPTION
       - R/*
       - inst/*
@@ -84,6 +85,7 @@ buildbinary:
     refs:
       - branches
     changes:
+      - .gitlab-ci.yml
       - Dockerfile
       - DESCRIPTION
       - R/*
@@ -108,6 +110,7 @@ documentation:
     refs:
       - branches
     changes:
+      - .gitlab-ci.yml
       - DESCRIPTION
       - R/*
       - inst/*
@@ -123,6 +126,7 @@ checkerrors:
     refs:
       - branches
     changes:
+      - .gitlab-ci.yml
       - DESCRIPTION
       - R/*
       - inst/*
@@ -139,6 +143,7 @@ checkwarnings:
     refs:
       - branches
     changes:
+      - .gitlab-ci.yml
       - DESCRIPTION
       - R/*
       - inst/*
@@ -155,6 +160,7 @@ checknotes:
     refs:
       - branches
     changes:
+      - .gitlab-ci.yml
       - DESCRIPTION
       - R/*
       - inst/*
@@ -170,6 +176,7 @@ unittestserrors:
     refs:
       - branches
     changes:
+      - .gitlab-ci.yml
       - DESCRIPTION
       - R/*
       - inst/*
@@ -186,6 +193,7 @@ unittestswarnings:
     refs:
       - branches
     changes:
+      - .gitlab-ci.yml
       - DESCRIPTION
       - R/*
       - inst/*
@@ -209,6 +217,7 @@ coverage:
     refs:
       - branches
     changes:
+      - .gitlab-ci.yml
       - DESCRIPTION
       - R/*
       - inst/*
@@ -232,6 +241,7 @@ quality_check:
     refs:
       - master
     changes:
+      - .gitlab-ci.yml
       - DESCRIPTION
       - R/*
       - inst/*
@@ -263,6 +273,7 @@ build whiteapp:
     refs:
       - master
     changes:
+      - .gitlab-ci.yml
       - Dockerfile
       - DESCRIPTION
       - R/*
@@ -290,6 +301,7 @@ deploy_dev:
     refs:
       - master
     changes:
+      - .gitlab-ci.yml
       - Dockerfile
       - DESCRIPTION
       - R/*
