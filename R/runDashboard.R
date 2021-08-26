@@ -4,9 +4,9 @@
 #'
 #' @export
 runDashboard <- function() {
-  appDir <- system.file("dashboard", package = "Phantasme")
+  appDir <- system.file("inst/dashboard", package = "WhiteAppRShiny")
   if (appDir == "") {
-    stop("Could not find `dashboard` directory. Try re-installing `Phasme`.",
+    stop("Could not find `dashboard` directory. Try re-installing `WhiteAppRShiny`.",
       call. = FALSE
     )
   }
