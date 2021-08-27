@@ -4,7 +4,7 @@
 #'
 #' @export
 runDashboard <- function() {
-  appDir <- system.file("inst/dashboard", package = "WhiteAppRShiny")
+  appDir <- system.file("dashboard", package = "WhiteAppRShiny")
   if (appDir == "") {
     stop("Could not find `dashboard` directory. Try re-installing `WhiteAppRShiny`.",
       call. = FALSE
@@ -15,6 +15,6 @@ runDashboard <- function() {
     appDir,
     display.mode = "normal",
     port = 8000,
-    launch.browser = TRUE
+    launch.browser = FALSE
   )
 }
