@@ -44,6 +44,7 @@ stages:
 variables:
   _R_CHECK_CRAN_INCOMING_: "false"
   _R_CHECK_FORCE_SUGGESTS_: "true"
+  _R_CHECK_SYSTEM_CLOCK_: 0
 
 .before_script_template:
   before_script:

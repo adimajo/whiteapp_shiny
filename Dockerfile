@@ -9,29 +9,21 @@ libsodium-dev \
 libxml2-dev \
 libicu-dev && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-ENV _R_SHLIB_STRIP_=true
+ENV _R_SHLIB_STRIP_ true
 
 RUN install2.r remotes renv
 
 RUN mkdir whiteapp
 
 COPY ./.Rbuildignore whiteapp/
-# COPY ./.Rprofile whiteapp/
-# COPY ./renv.lock whiteapp/
-COPY ./inst whiteapp/
-COPY ./R whiteapp/
+COPY ./inst whiteapp/inst
+COPY ./R whiteapp/R
 COPY ./DESCRIPTION whiteapp/
-
-# RUN Rscript -e "options(renv.consent = TRUE);renv::restore(lockfile = 'renv.lock')"
 
 RUN Rscript -e "install.packages('devtools')"
 
-RUN ls -al whiteapp
-
-RUN R CMD build whiteapp
-
-RUN R CMD INSTALL *.tar.gz
+RUN Rscript -e "devtools::install_local('whiteapp')"
 
 EXPOSE 8000
 
-CMD ["R", "-e", "WhiteAppRShiny::runDashboard()"]
+CMD ["Rscript", "-e", "WhiteAppRShiny::runDashboard()"]
