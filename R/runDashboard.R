@@ -13,6 +13,7 @@ runDashboard <- function() {
 
   shiny::runApp(
     appDir,
+    host = "0.0.0.0",
     display.mode = "normal",
     port = 8000,
     launch.browser = FALSE
