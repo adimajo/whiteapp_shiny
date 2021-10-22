@@ -54,12 +54,16 @@ variables:
   - r -e 'devtools::install_deps()'
 
 lint:
+  artifacts:
+    paths:
+      - lintr_out.json
   extends: .before_script_template
   stage: lint
   <<: *common_r
   <<: *common_tag
   script:
     - r -e "install.packages('styler')"
+    - r -e "install.packages('lintr')"
     - r inst/pipeline/lint.R
   only:
     refs:
