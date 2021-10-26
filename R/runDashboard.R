@@ -6,7 +6,8 @@
 runDashboard <- function() {
   appDir <- system.file("dashboard", package = "WhiteAppRShiny")
   if (appDir == "") {
-    stop("Could not find `dashboard` directory. Try re-installing `WhiteAppRShiny`.",
+    stop("Could not find `dashboard` directory.
+         Try re-installing `WhiteAppRShiny`.",
       call. = FALSE
     )
   }
