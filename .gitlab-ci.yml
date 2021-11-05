@@ -106,9 +106,7 @@ documentation:
   <<: *common_r
   <<: *common_tag
   script:
-    - apt-get -y install libfontconfig1-dev
-    - apt-get -y install libharfbuzz-dev libfribidi-dev
-    - apt-get -y install libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev
+    - apt-get -y install libfontconfig1-dev libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev git
     - r -e "install.packages('pkgdown')"
     - r inst/pipeline/document.R
     - git config --global http.sslverify false
