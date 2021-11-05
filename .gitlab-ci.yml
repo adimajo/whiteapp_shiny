@@ -106,6 +106,8 @@ documentation:
   <<: *common_r
   <<: *common_tag
   script:
+    - . ./build.env
+    - 'echo GENERATED TAG : $APPLICATION_TAG_VERSION'
     - apt-get -y install libfontconfig1-dev libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev git
     - r -e "install.packages('pkgdown')"
     - r inst/pipeline/document.R
@@ -247,7 +249,7 @@ coverage:
 quality_check:
   stage: sonar_check
   image:
-    name: docker-remote.registry.saas.cagip.group.gca/sonarsource/sonar-scanner-cli:4.2
+    name: docker-remote.registry.saas.cagip.group.gca/sonarsource/sonar-scanner-cli:4.6
   <<: *common_tag
   variables:
     SONAR_TOKEN: "${BOOT_SONAR_TOKEN}"
