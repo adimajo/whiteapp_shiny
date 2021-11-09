@@ -33,11 +33,11 @@ stages:
   - lint
   - build package
   - document
-  - sonar_check
   - check
   - test
   - coverage
   - checkrhub
+  - sonar_check
   - build docker
   - deploy_dev
 
