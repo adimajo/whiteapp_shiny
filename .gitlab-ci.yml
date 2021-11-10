@@ -236,7 +236,7 @@ coverage:
     - r -e 'renv::restore()'
     - r -e 'renv::install("covr")'
     - r -e 'renv::install("DT")'
-    - r -e 'the_coverage <- covr::package_coverage(quiet = FALSE, clean = FALSE); print(the_coverage); covr::to_sonarqube(the_coverage, filename = "coverage.xml")'
+    - r inst/pipeline/sonarqube.R
   only:
     refs:
       - branches
