@@ -51,7 +51,7 @@ variables:
   - apt-get update
   - apt-get -y install libxml2-dev libssl-dev libcurl4-openssl-dev libgit2-dev libssh2-1-dev pandoc
   - r -e "install.packages('devtools')"
-  - r -e 'devtools::install_deps()'
+  - r -e 'devtools::install_deps(dependencies = TRUE)'
 
 lint:
   artifacts:
