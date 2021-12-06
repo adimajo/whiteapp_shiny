@@ -40,6 +40,8 @@ stages:
   - sonar_check
   - build docker
   - deploy_dev
+  - promote_staging
+  - promote_stable
 
 variables:
   _R_CHECK_CRAN_INCOMING_: "false"
@@ -71,8 +73,8 @@ lint:
     changes:
       - .gitlab-ci.yml
       - DESCRIPTION
-      - R/*
-      - inst/*
+      - R/**/*
+      - inst/**/*
 
 buildbinary:
   artifacts:
@@ -93,8 +95,8 @@ buildbinary:
       - .gitlab-ci.yml
       - Dockerfile
       - DESCRIPTION
-      - R/*
-      - inst/*
+      - R/**/*
+      - inst/**/*
 
 documentation:
   artifacts:
@@ -133,8 +135,8 @@ documentation:
     changes:
       - .gitlab-ci.yml
       - DESCRIPTION
-      - R/*
-      - inst/*
+      - R/**/*
+      - inst/**/*
 
 checkerrors:
   <<: *common_r
@@ -149,8 +151,8 @@ checkerrors:
     changes:
       - .gitlab-ci.yml
       - DESCRIPTION
-      - R/*
-      - inst/*
+      - R/**/*
+      - inst/**/*
 
 checkwarnings:
   <<: *common_r
@@ -166,8 +168,8 @@ checkwarnings:
     changes:
       - .gitlab-ci.yml
       - DESCRIPTION
-      - R/*
-      - inst/*
+      - R/**/*
+      - inst/**/*
 
 checknotes:
   <<: *common_r
@@ -183,8 +185,8 @@ checknotes:
     changes:
       - .gitlab-ci.yml
       - DESCRIPTION
-      - R/*
-      - inst/*
+      - R/**/*
+      - inst/**/*
 
 unittestserrors:
   <<: *common_r
@@ -199,8 +201,8 @@ unittestserrors:
     changes:
       - .gitlab-ci.yml
       - DESCRIPTION
-      - R/*
-      - inst/*
+      - R/**/*
+      - inst/**/*
 
 unittestswarnings:
   <<: *common_r
@@ -216,8 +218,8 @@ unittestswarnings:
     changes:
       - .gitlab-ci.yml
       - DESCRIPTION
-      - R/*
-      - inst/*
+      - R/**/*
+      - inst/**/*
 
 coverage:
   artifacts:
@@ -243,8 +245,8 @@ coverage:
     changes:
       - .gitlab-ci.yml
       - DESCRIPTION
-      - R/*
-      - inst/*
+      - R/**/*
+      - inst/**/*
 
 quality_check:
   stage: sonar_check
@@ -254,8 +256,8 @@ quality_check:
   variables:
     SONAR_TOKEN: "${BOOT_SONAR_TOKEN}"
     SONAR_HOST_URL: "${BOOT_SONAR_INSTANCE}"
-    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar" # Defines the location of the analysis task cache
-    GIT_DEPTH: 0 # Tells git to fetch all the branches of the project, required by the analysis task
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
+    GIT_DEPTH: 0  # Tells git to fetch all the branches of the project, required by the analysis task
     SONAR_SCANNER_OPTS: "-Djavax.net.ssl.trustStore=cacerts"
   script:
     - . ./build.env
@@ -270,8 +272,8 @@ quality_check:
     changes:
       - .gitlab-ci.yml
       - DESCRIPTION
-      - R/*
-      - inst/*
+      - R/**/*
+      - inst/**/*
 
 build whiteapp:
   stage: build docker
@@ -303,8 +305,8 @@ build whiteapp:
       - .gitlab-ci.yml
       - Dockerfile
       - DESCRIPTION
-      - R/*
-      - inst/*
+      - R/**/*
+      - inst/**/*
 
 deploy_dev:
   stage: deploy_dev
@@ -331,5 +333,37 @@ deploy_dev:
       - .gitlab-ci.yml
       - Dockerfile
       - DESCRIPTION
-      - R/*
-      - inst/*
+      - R/**/*
+      - inst/**/*
+
+promote_staging:
+  stage: promote_staging
+  when: manual
+  <<: *ci_tools
+  <<: *common_tag
+  variables:
+    CREDS: "${BOOT_ARTI_USER}:${BOOT_ARTI_PASSWORD}"
+    SOURCE_REPO: "${BOOT_ARTI_SCRATCH_REGISTRY}"
+    TARGET_REPO: "${BOOT_ARTI_STAGING_REGISTRY}"
+  script:
+    - . ./build.env
+    - 'echo GENERATED TAG : $APPLICATION_TAG_VERSION'
+    - "curl -S -k -u ${CREDS} -XPOST https://$BOOT_ARTI_REGISTRY/api/docker/$SOURCE_REPO/v2/promote -H \"Content-Type: application/json\" -d\"{\"targetRepo\":\"${TARGET_REPO}\",\"dockerRepository\":\"${BOOT_ARTI_REPO}\",\"tag\":\"${APPLICATION_TAG_VERSION}\",\"copy\":true}\""
+  only:
+   - master
+
+promote_stable:
+  stage: promote_stable
+  when: manual
+  <<: *ci_tools
+  <<: *common_tag
+  variables:
+    SOURCE_REPO: "${BOOT_ARTI_STAGING_REGISTRY}"
+    TARGET_REPO: "${BOOT_ARTI_STABLE_REGISTRY}"
+    IMAGE: "${BOOT_ARTI_REPO}"
+  script:
+    - . ./build.env
+    - 'echo GENERATED TAG : $APPLICATION_TAG_VERSION'
+    - docker-promote --tag=$APPLICATION_TAG_VERSION
+  only:
+   - master
