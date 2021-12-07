@@ -1,7 +1,7 @@
 hacked_sonarqube <- function(cov, filename = "sonarqube.xml") {
   loadNamespace("xml2")
 
-  df <- tally_coverage(cov, by = "line")
+  df <- covr::tally_coverage(cov, by = "line")
 
   d <- xml2::xml_new_document()
 
