@@ -10,7 +10,8 @@ hacked_sonarqube <- function(cov, filename = "sonarqube.xml") {
   files <- unique(df$filename)
 
   for (f in files) {
-    file <- xml2::xml_add_child(top, "file", path = paste(as.character(f), sep = ""))
+    file <- xml2::xml_add_child(top, "file",
+                                path = paste(as.character(f), sep = ""))
 
     for (fun_name in unique(na.omit(df[df$filename == f, "functions"]))) {
       fun_lines <- which(df$functions == fun_name)
