@@ -1,6 +1,6 @@
 .common_r: &common_r
   image:
-    name: docker-remote.registry.saas.cagip.group.gca/library/r-base:4.0.5
+    name: ${DOCKER_REGISTRY}r-base:4.0.5
 
 .ci_tools: &ci_tools
   image:
@@ -51,7 +51,7 @@ variables:
 .before_script_template:
   before_script:
   - apt-get update
-  - apt-get -y install libxml2-dev libssl-dev libcurl4-openssl-dev libgit2-dev libssh2-1-dev pandoc
+  - apt-get -y install libxml2-dev libssl-dev libcurl4-openssl-dev libgit2-dev libssh2-1-dev pandoc qpdf
   - r -e "install.packages('devtools')"
   - r -e 'devtools::install_deps(dependencies = TRUE)'
 
@@ -247,6 +247,7 @@ coverage:
       - DESCRIPTION
       - R/**/*
       - inst/**/*
+timeout: 3 hours
 
 quality_check:
   stage: sonar_check
@@ -297,7 +298,7 @@ build whiteapp:
        KANIKOCFG="${KANIKOCFG} }"
        echo "${KANIKOCFG}" >> /kaniko/.docker/config.json
     - wget -qO - http://crl-priv-pki.credit-agricole.fr/ca/cacreditagricoleserver.crt >> /kaniko/ssl/certs/additional-ca-cert-bundle.crt
-    - /kaniko/executor --context . --dockerfile Dockerfile $KANIKOPROXYBUILDARGS --destination $BOOT_ARTI_SCRATCH_REGISTRY.$BOOT_ARTI_REGISTRY/$BOOT_ARTI_REPO:$APPLICATION_TAG_VERSION
+    - /kaniko/executor --context . --dockerfile Dockerfile $KANIKOPROXYBUILDARGS --build-arg DOCKER_REGISTRY=$DOCKER_REGISTRY --destination $BOOT_ARTI_SCRATCH_REGISTRY.$BOOT_ARTI_REGISTRY/$BOOT_ARTI_REPO:$APPLICATION_TAG_VERSION
   only:
     refs:
       - master

@@ -3,12 +3,12 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^inst/powerpoint/*.png$
-^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
-^.gitlab-ci.yml
 ^scripts$
 ^certificates$
-^build.env$
-^Dockerfile$
-^lintr_out.json$
+^_pkgdown\.yml$
+^Dockerfile
+^.gitlab-ci.yml
+^build.env
+^lintr_out.json
