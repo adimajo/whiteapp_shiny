@@ -12,3 +12,4 @@
 ^.gitlab-ci.yml
 ^build.env
 ^lintr_out.json
+^\.github^

@@ -247,7 +247,7 @@ coverage:
       - DESCRIPTION
       - R/**/*
       - inst/**/*
-timeout: 3 hours
+  timeout: 3 hours
 
 quality_check:
   stage: sonar_check
