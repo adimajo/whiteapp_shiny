@@ -1,4 +1,8 @@
-FROM docker-remote.registry.saas.cagip.group.gca/rocker/shiny:4.0.5
+ARG DOCKER_REGISTRY
+
+RUN export DOCKER_REGISTRY_BIS = $(echo ${DOCKER_REGISTRY} | sed 's/library///')
+
+FROM ${DOCKER_REGISTRY_BIS}/rocker/shiny:4.0.5
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
 git-core \
