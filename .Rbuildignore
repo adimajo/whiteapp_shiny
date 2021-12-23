@@ -8,8 +8,8 @@
 ^scripts$
 ^certificates$
 ^_pkgdown\.yml$
+^\.github$
 ^Dockerfile
 ^.gitlab-ci.yml
 ^build.env
 ^lintr_out.json
-^\.github^

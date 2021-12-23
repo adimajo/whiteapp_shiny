@@ -1,6 +1,4 @@
-ARG DOCKER_REGISTRY
-
-RUN export DOCKER_REGISTRY_BIS = $(echo ${DOCKER_REGISTRY} | sed 's/library///')
+ARG DOCKER_REGISTRY_BIS
 
 FROM ${DOCKER_REGISTRY_BIS}/rocker/shiny:4.0.5
 
