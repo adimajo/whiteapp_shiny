@@ -1,6 +1,6 @@
 ARG DOCKER_REGISTRY_BIS
 
-FROM ${DOCKER_REGISTRY_BIS}/rocker/shiny:4.0.5
+FROM ${DOCKER_REGISTRY_BIS}rocker/shiny:4.0.5
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
 git-core \
