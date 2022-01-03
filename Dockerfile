@@ -28,4 +28,6 @@ RUN Rscript -e "devtools::install_local('whiteapp')"
 
 EXPOSE 8000
 
+USER nobody
+
 CMD ["Rscript", "-e", "WhiteAppRShiny::runDashboard()"]
