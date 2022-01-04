@@ -42,13 +42,12 @@ jobs:
           cp -r docs/* docs_to_publish/docs/
           cd docs_to_publish
           git add -A
-          |-
-            if ! git diff-index --quiet HEAD --; then
-                git commit -am "Rollout documentation for version $APPLICATION_TAG_VERSION"
-                git push
-            else
-                echo "Nothing to push"
-            fi
+          if ! git diff-index --quiet HEAD --; then
+              git commit -am "Rollout documentation for version $APPLICATION_TAG_VERSION"
+              git push
+          else
+              echo "Nothing to push"
+          fi
       - name: Check package (as CRAN)
         run: devtools::check(document = FALSE, args = "--no-tests", error_on = "warning")
         shell: Rscript {0}
