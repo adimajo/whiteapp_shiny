@@ -36,7 +36,7 @@ jobs:
         run: |
           Rscript -e 'install.packages("pkgdown")'
           Rscript inst/pipeline/document.R
-          git clone --branch pages https://adimajo:APP_TOKEN@github.com/adimajo/whiteapp_shiny.git docs_to_publish
+          git clone --branch pages https://adimajo:$APP_TOKEN@github.com/adimajo/whiteapp_shiny.git docs_to_publish
           rm -rf docs_to_publish/docs
           mkdir docs_to_publish/docs
           cp -r docs/* docs_to_publish/docs/
