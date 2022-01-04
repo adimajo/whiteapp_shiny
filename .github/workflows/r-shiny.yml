@@ -41,6 +41,9 @@ jobs:
           mkdir docs_to_publish/docs
           cp -r docs/* docs_to_publish/docs/
           cd docs_to_publish
+          export LATEST_COMMITER_EMAIL=`git --no-pager log -1 -s --format="%ae"`
+          git config --global user.email $LATEST_COMMITTER_EMAIL
+          git config --global user.name $GITHUB_ACTOR
           git add -A
           if ! git diff-index --quiet HEAD --; then
               git commit -am "Rollout documentation for version $APPLICATION_TAG_VERSION"
