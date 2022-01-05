@@ -21,7 +21,7 @@ jobs:
         shell: Rscript {0}
       - name: Check code style
         run: |
-          Rscript -e 'install.packages("lintr")'
+          Rscript -e 'install.packages("styler")'
           Rscript inst/pipeline/lint.R
       - name: Install dependencies
         run: devtools::install_deps(dependencies = TRUE)
