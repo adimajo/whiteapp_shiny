@@ -17,11 +17,11 @@ jobs:
           sudo apt-get update -y
           sudo apt-get install libgit2-dev libssh2-1-dev libcurl4-openssl-dev pandoc libharfbuzz-dev libfribidi-dev -y
       - name: Install devtools
-        run: install.packages("devtools")
+        run: install.packages("devtools",dependencies=TRUE)
         shell: Rscript {0}
       - name: Check code style
         run: |
-          Rscript -e 'install.packages(c("styler", "lintr"))'
+          Rscript -e 'install.packages("lintr")'
           Rscript inst/pipeline/lint.R
       - name: Install dependencies
         run: devtools::install_deps(dependencies = TRUE)
@@ -31,9 +31,8 @@ jobs:
           Rscript -e "devtools::install()"
           export APPLICATION_TAG_VERSION=`r -e 'library(WhiteAppRShiny); cat(find_packages_versions())'`
       - name: Build documentation
-        run: |
-          Rscript -e 'install.packages("pkgdown")'
-          Rscript inst/pipeline/document.R
+        run: inst/pipeline/document.R
+        shell: Rscript {0}
       - name: Upload documentation
         env:
           APP_TOKEN: ${{ secrets.APP_TOKEN }}
@@ -47,6 +46,10 @@ jobs:
           echo $LATEST_COMMITER_EMAIL
           git config --global user.email "$LATEST_COMMITTER_EMAIL"
           echo "git config email worked"
+          git config --global user.name "$GITHUB_ACTOR"
+          echo "git config name worked"
+          git add -A
+          echo "git add worked"
       - name: Check package (as CRAN)
         run: devtools::check(document = FALSE, args = "--no-tests", error_on = "warning")
         shell: Rscript {0}
