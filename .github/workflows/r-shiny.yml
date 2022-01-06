@@ -31,8 +31,7 @@ jobs:
           Rscript -e "devtools::install()"
           export APPLICATION_TAG_VERSION=`r -e 'library(WhiteAppRShiny); cat(find_packages_versions())'`
       - name: Build documentation
-        run: inst/pipeline/document.R
-        shell: Rscript {0}
+        run: Rscript inst/pipeline/document.R
       - name: Upload documentation
         env:
           APP_TOKEN: ${{ secrets.APP_TOKEN }}
