@@ -1,3 +1,6 @@
+![R package](https://github.com/adimajo/whiteapp_shiny/workflows/R%20package/badge.svg)
+[![Travis build status](https://travis-ci.org/adimajo/whiteapp_shiny.svg?branch=master)](https://travis-ci.org/adimajo/whiteapp_shiny)
+[![Coverage status](https://codecov.io/gh/adimajo/whiteapp_shiny/branch/master/graph/badge.svg)](https://codecov.io/github/adimajo/whiteapp_shiny?branch=master)
 
 # WhiteApp R Shiny
 
