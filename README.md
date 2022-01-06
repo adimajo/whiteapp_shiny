@@ -4,43 +4,26 @@
 
 # WhiteApp R Shiny
 
-<!-- badges: start -->
-<!-- badges: end -->
-
-Le package `WhiteApp` est un template BootStrap pour déploiement d'une chaîne CI/CD pour projet Flask (Python).
+The `WhiteApp` package / shiny app is a template of a simple Shiny app which displays current versions of R and installed packages. All functions necessary to the app are created in an R package to keep things tidy and well documented (thus using the standard tools for R packages), making the Shiny ui / server scripts merely executors of functions defined in the `WhiteApp` package. The template ships with a Gitlab CI pipeline (which lints the code, builds the package, document it, runs CRAN checks, tests, computes test coverage, checks on rhub on different platforms as well as on Sonarqube, builds a docker container and deploys it), a Github Actions pipeline (which lints, documents and upload the documentation as github page, checks the package, computes tests and coverage, chekcs on rhbub for different platforms, builds a docker container and uploads it to Github), and a Travis pipeline (for elegant display of code coverage). 
 
 ## Installation
 
-### Environnement R
+### R environment
 
-Le projet utilise **R 4.0** dans un container Docker.
+This projects uses **R 4.0** and **renv**.
 
-Le projet utilise également **renv**.
+Dependencies are stated in the DESCRIPTION file, as well as, with their versions, in `renv.lock`.
 
-L'ensemble des dépendances R sont listées dans le fichier `renv.lock`.
-Les dépendances sont a priori installées automatiquement du fait du script
-`renv/activate.R` qui est chargé à l'ouverture du projet (voir `.Rprofile`).
-Si l'installation ne s'est pas déroulée correctement, celles-ci peuvent être 
-installées à l'aide de `renv::restore()`, après avoir
-installé `renv` via `install.packages('renv')`.
+To use this template and / or make contributions, you should install `renv` (e.g. via `install.packages('renv')`) which will in turn automatically install packages from `renv.lock` by sourcing `renv/activate.R`.
+
+If this didn't go well, use `renv::restore()`.
 
 ### Installation "locale" sans internet
 
-#### Dépendances
+#### Dependencies
 
-L'ensemble des dépendances du projet, afin de les porter ensuite 
-sur une machine qui disposerait d'un accès limité à internet, sont dans le dossier `renv/library`.
-Attention, ces packages sont donnés pour une version de R, et possiblement, si des packages nécessitant
-une compilation ont été téléchargés, une architecture.
+All dependencies are downloaded into the `renv/library` folder, which allows for installation on an internet-free machine (provided ~identical configuration, i.e. same R version same architecture if there are compiled packages, etc.).
 
 #### R-portable
 
-Il est possible d'y associer une version portable de R, [téléchargeable sur
-internet](https://sourceforge.net/projects/rportable/).
-
-#### Script
-
-On trouve dans le répertoire `scripts/` un script R qui spécifie que la librairie
-`renv` est celle à utiliser, charge le package, et lance l'application, de même
-qu'un script .bat qui pointe vers le dossier R-portable préalablement téléchargé
-et lance le scrit R susmentionné.
+It is also possible to get a portable version of R, [downloadable from Sourceforge](https://sourceforge.net/projects/rportable/).
