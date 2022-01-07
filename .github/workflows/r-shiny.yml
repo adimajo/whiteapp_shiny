@@ -42,7 +42,7 @@ jobs:
           echo $LATEST_COMMITER_EMAIL
           git config --global user.email "$LATEST_COMMITTER_EMAIL"
           git config --global user.name "$GITHUB_ACTOR"
-          git add docs
+          git add -f docs
           git checkout pages
           rm -rf docs
           mkdir docs
