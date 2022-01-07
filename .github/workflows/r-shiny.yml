@@ -38,17 +38,17 @@ jobs:
         run: Rscript inst/pipeline/document.R
       - name: Upload documentation
         run: |
-          git clone --branch pages https://$GITHUB_TOKEN@github.com/adimajo/whiteapp_shiny.git docs_to_publish
-          rm -rf docs_to_publish/docs
-          mkdir docs_to_publish/docs
-          cp -r docs/* docs_to_publish/docs/
-          cd docs_to_publish
           export LATEST_COMMITER_EMAIL=`git --no-pager log -1 -s --format="%ae"`
           echo $LATEST_COMMITER_EMAIL
           git config --global user.email "$LATEST_COMMITTER_EMAIL"
           git config --global user.name "$GITHUB_ACTOR"
-          git add -A
-          if [ ! git diff-index --quiet HEAD -- ] ; then git commit -am "Rollout version $APPLICATION_TAG_VERSION" && git push; else echo "Nothing to push"; fi
+          git add docs
+          git checkout pages
+          rm -rf docs
+          mkdir docs
+          git checkout master docs
+          git add docs
+          if [ ! git diff-index --quiet HEAD -- ] ; then git commit -am "Rollout version $APPLICATION_TAG_VERSION" && git push origin pages; else echo "Nothing to push"; fi
       - name: Check package (as CRAN)
         run: devtools::check(document = FALSE, args = "--no-tests", error_on = "warning")
         shell: Rscript {0}
