@@ -1,7 +1,7 @@
 test_that("find_R_version works", {
   R_version <- find_R_version()
   expect_true(is.data.frame(R_version))
-  expect_length(R_version, 14)
+  expect_true(length(R_version) %in% c(14, 15))
   expect_named(R_version)
 })
 
