@@ -46,10 +46,11 @@ jobs:
           git config --global user.email "$LATEST_COMMITTER_EMAIL"
           git config --global user.name "$GITHUB_ACTOR"
           git add -f docs
+          git commit -am "Rollout version $APPLICATION_TAG_VERSION"
           git checkout pages
           rm -rf docs
           mkdir docs
-          git checkout master docs
+          git checkout master -- docs
           git add docs
           if [ ! git diff-index --quiet HEAD -- ] ; then git commit -am "Rollout version $APPLICATION_TAG_VERSION" && git push origin pages; else echo "Nothing to push"; fi
       - name: Check package (as CRAN)
