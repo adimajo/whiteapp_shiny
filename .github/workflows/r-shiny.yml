@@ -36,7 +36,9 @@ jobs:
       - name: Install package
         run: |
           Rscript -e "devtools::install()"
+          Rscript -e 'library(WhiteAppRShiny); cat(find_packages_versions())'
           export APPLICATION_TAG_VERSION=`Rscript -e 'library(WhiteAppRShiny); cat(find_packages_versions())'`
+          echo $APPLICATION_TAG_VERSION
       - name: Build documentation
         run: Rscript inst/pipeline/document.R
       - name: Upload documentation
