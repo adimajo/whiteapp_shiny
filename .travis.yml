@@ -1,8 +1,5 @@
 before_install:
-  - sudo apt-get -y install libgsl-dev
-addons:
-  apt:
-    update: true
+  - Rscript -e "devtools::document()"
 
 # R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
 
