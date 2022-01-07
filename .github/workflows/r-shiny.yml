@@ -1,4 +1,4 @@
-name: R package
+name: R Shiny docker
 
 on:
   push:
@@ -44,11 +44,9 @@ jobs:
           export LATEST_COMMITER_EMAIL=`git --no-pager log -1 -s --format="%ae"`
           echo $LATEST_COMMITER_EMAIL
           git config --global user.email "$LATEST_COMMITTER_EMAIL"
-          echo "git config email worked"
           git config --global user.name "$GITHUB_ACTOR"
-          echo "git config name worked"
           git add -A
-          echo "git add worked"
+          if [ ! git diff-index --quiet HEAD -- ] ; then git commit -am "Rollout version $APPLICATION_TAG_VERSION" && git push; else echo "Nothing to push"; fi
       - name: Check package (as CRAN)
         run: devtools::check(document = FALSE, args = "--no-tests", error_on = "warning")
         shell: Rscript {0}
