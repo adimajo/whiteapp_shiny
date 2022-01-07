@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ master ]
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 jobs:
   build:
     runs-on: ubuntu-18.04
@@ -33,10 +37,8 @@ jobs:
       - name: Build documentation
         run: Rscript inst/pipeline/document.R
       - name: Upload documentation
-        env:
-          APP_TOKEN: ${{ secrets.APP_TOKEN }}
         run: |
-          git clone --branch pages https://adimajo:$APP_TOKEN@github.com/adimajo/whiteapp_shiny.git docs_to_publish
+          git clone --branch pages https://$GITHUB_TOKEN@github.com/adimajo/whiteapp_shiny.git docs_to_publish
           rm -rf docs_to_publish/docs
           mkdir docs_to_publish/docs
           cp -r docs/* docs_to_publish/docs/
@@ -64,3 +66,15 @@ jobs:
         env:
           RHUB_TOKEN: ${{ secrets.RHUB_TOKEN }}
         run: Rscript inst/pipeline/rhubcheck.R "windows-x86_64-devel" "$RHUB_TOKEN"
+      - name: Log in to the Container registry
+        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          context: .
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$APPLICATION_TAG_VERSION
