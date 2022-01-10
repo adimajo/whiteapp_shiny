@@ -32,18 +32,12 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">WhiteAppRShiny</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.0</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-<li>
-  <a href="index.html">
-    <span class="fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
 <li>
   <a href="reference/index.html">Reference</a>
 </li>
@@ -60,39 +54,62 @@
 
       </header><div class="row">
   <div class="contents col-md-9">
-<div id="whiteapp-r-shiny" class="section level1">
-<div class="page-header"><h1 class="hasAnchor">
-<a href="#whiteapp-r-shiny" class="anchor"></a>WhiteApp R Shiny</h1></div>
-<!-- badges: start -->
-<!-- badges: end -->
-<p>Le package <code>WhiteApp</code> est un template BootStrap pour déploiement d’une chaîne CI/CD pour projet Flask (Python).</p>
-<div id="installation" class="section level2">
-<h2 class="hasAnchor">
-<a href="#installation" class="anchor"></a>Installation</h2>
-<div id="environnement-r" class="section level3">
-<h3 class="hasAnchor">
-<a href="#environnement-r" class="anchor"></a>Environnement R</h3>
-<p>Le projet utilise <strong>R 4.0</strong> dans un container Docker.</p>
-<p>Le projet utilise également <strong>renv</strong>.</p>
-<p>L’ensemble des dépendances R sont listées dans le fichier <code>renv.lock</code>. Les dépendances sont a priori installées automatiquement du fait du script <code>renv/activate.R</code> qui est chargé à l’ouverture du projet (voir <code>.Rprofile</code>). Si l’installation ne s’est pas déroulée correctement, celles-ci peuvent être installées à l’aide de <code><a href="https://rstudio.github.io/renv/reference/restore.html">renv::restore()</a></code>, après avoir installé <code>renv</code> via <code><a href="https://rdrr.io/r/utils/install.packages.html">install.packages('renv')</a></code>.</p>
+<div class="section level1">
+<div class="page-header"><h1 id="whiteapp-r-shiny">WhiteApp R Shiny<a class="anchor" aria-label="anchor" href="#whiteapp-r-shiny"></a>
+</h1></div>
+<p>The <code>WhiteApp</code> package / shiny app is a template of a simple Shiny app which displays current versions of R and installed packages. All functions necessary to the app are created in an R package to keep things tidy and well documented (thus using the standard tools for R packages), making the Shiny ui / server scripts merely executors of functions defined in the <code>WhiteApp</code> package. The template ships with a Gitlab CI pipeline (which lints the code, builds the package, document it, runs CRAN checks, tests, computes test coverage, checks on rhub on different platforms as well as on Sonarqube, builds a docker container and deploys it), a Github Actions pipeline (which lints, documents and upload the documentation as github page, checks the package, computes tests and coverage, checks on rhbub for different platforms, builds a docker container and uploads it to Github), and a Travis pipeline (for elegant display of code coverage).</p>
+<div class="section level2">
+<h2 id="using-the-github-actions-pipeline">Using the Github Actions pipeline<a class="anchor" aria-label="anchor" href="#using-the-github-actions-pipeline"></a>
+</h2>
+<div class="section level3">
+<h3 id="secrets">Secrets<a class="anchor" aria-label="anchor" href="#secrets"></a>
+</h3>
+<p>One Github Secret needs to be set:</p>
+<p>RHUB_TOKEN: the token associated with the package’s maintainer’s email address, validated via <code><a href="https://r-hub.github.io/rhub/reference/validate_email.html" class="external-link">rhub::validate_email()</a></code>.</p>
 </div>
-<div id="installation-locale-sans-internet" class="section level3">
-<h3 class="hasAnchor">
-<a href="#installation-locale-sans-internet" class="anchor"></a>Installation “locale” sans internet</h3>
-<div id="dépendances" class="section level4">
-<h4 class="hasAnchor">
-<a href="#d%C3%A9pendances" class="anchor"></a>Dépendances</h4>
-<p>L’ensemble des dépendances du projet, afin de les porter ensuite sur une machine qui disposerait d’un accès limité à internet, sont dans le dossier <code>renv/library</code>. Attention, ces packages sont donnés pour une version de R, et possiblement, si des packages nécessitant une compilation ont été téléchargés, une architecture.</p>
 </div>
-<div id="r-portable" class="section level4">
-<h4 class="hasAnchor">
-<a href="#r-portable" class="anchor"></a>R-portable</h4>
-<p>Il est possible d’y associer une version portable de R, <a href="https://sourceforge.net/projects/rportable/">téléchargeable sur internet</a>.</p>
+<div class="section level2">
+<h2 id="using-the-gitlab-ci-pipeline">Using the Gitlab CI pipeline<a class="anchor" aria-label="anchor" href="#using-the-gitlab-ci-pipeline"></a>
+</h2>
+<div class="section level3">
+<h3 id="variables">Variables<a class="anchor" aria-label="anchor" href="#variables"></a>
+</h3>
+<p>BOOT_GITLAB_DOCS_REPO</p>
+<p>BOOT_GITLAB_SRV_ACCOUNT</p>
+<p>BOOT_GITLAB_CAGIP_TOKEN</p>
+<p>BOOT_SONAR_TOKEN</p>
+<p>BOOT_SONAR_INSTANCE</p>
 </div>
-<div id="script" class="section level4">
-<h4 class="hasAnchor">
-<a href="#script" class="anchor"></a>Script</h4>
-<p>On trouve dans le répertoire <code>scripts/</code> un script R qui spécifie que la librairie <code>renv</code> est celle à utiliser, charge le package, et lance l’application, de même qu’un script .bat qui pointe vers le dossier R-portable préalablement téléchargé et lance le scrit R susmentionné.</p>
+</div>
+<div class="section level2">
+<h2 id="using-the-travis-pipeline">Using the Travis pipeline<a class="anchor" aria-label="anchor" href="#using-the-travis-pipeline"></a>
+</h2>
+<p>Connect to <a href="https://app.travis-ci.com/" class="external-link">app.travis-ci.com</a> and <a href="https://app.codecov.io" class="external-link">app.codecov.io</a> to connect your repo.</p>
+<p>The pipeline installs devtools, the dependencies of the application, documents it, checks it, computes code coverage and sends it to <a href="https://app.codecov.io" class="external-link">app.codecov.io</a> to display it nicely on this README.</p>
+</div>
+<div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
+<div class="section level3">
+<h3 id="r-environment">R environment<a class="anchor" aria-label="anchor" href="#r-environment"></a>
+</h3>
+<p>This projects uses <strong>R 4.0</strong> and <strong>renv</strong>.</p>
+<p>Dependencies are stated in the DESCRIPTION file, as well as, with their versions, in <code>renv.lock</code>.</p>
+<p>To use this template and / or make contributions, you should install <code>renv</code> (e.g. via <code>install.packages('renv')</code>) which will in turn automatically install packages from <code>renv.lock</code> by sourcing <code>renv/activate.R</code>.</p>
+<p>If this didn’t go well, use <code><a href="https://rstudio.github.io/renv/reference/restore.html" class="external-link">renv::restore()</a></code>.</p>
+</div>
+<div class="section level3">
+<h3 id="installation-locale-sans-internet">Installation “locale” sans internet<a class="anchor" aria-label="anchor" href="#installation-locale-sans-internet"></a>
+</h3>
+<div class="section level4">
+<h4 id="dependencies">Dependencies<a class="anchor" aria-label="anchor" href="#dependencies"></a>
+</h4>
+<p>All dependencies are downloaded into the <code>renv/library</code> folder, which allows for installation on an internet-free machine (provided ~identical configuration, i.e. same R version same architecture if there are compiled packages, etc.).</p>
+</div>
+<div class="section level4">
+<h4 id="r-portable">R-portable<a class="anchor" aria-label="anchor" href="#r-portable"></a>
+</h4>
+<p>It is also possible to get a portable version of R, <a href="https://sourceforge.net/projects/rportable/" class="external-link">downloadable from Sourceforge</a>.</p>
 </div>
 </div>
 </div>
@@ -101,36 +118,47 @@
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <div class="license">
-<h2>License</h2>
+<h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
 <li>file <a href="LICENSE-text.html">LICENSE</a>
 </li>
 </ul>
 </div>
+<div class="citation">
+<h2 data-toc-skip>Citation</h2>
+<ul class="list-unstyled">
+<li><a href="authors.html#citation">Citing WhiteAppRShiny</a></li>
+</ul>
+</div>
+
 <div class="developers">
-<h2>Developers</h2>
+<h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
 <li> GRO <br><small class="roles"> Maintainer </small>  </li>
 </ul>
 </div>
 
+<div class="dev-status">
+<h2 data-toc-skip>Dev status</h2>
+<ul class="list-unstyled">
+<li><a href="https://github.com/adimajo/whiteapp_shiny/actions/workflows/r-shiny.yml" class="external-link"><img src="https://github.com/adimajo/whiteapp_shiny/actions/workflows/r-shiny.yml/badge.svg" alt="R Shiny docker"></a></li>
+<li><a href="https://app.travis-ci.com/adimajo/whiteapp_shiny" class="external-link"><img src="https://app.travis-ci.com/adimajo/whiteapp_shiny.svg?token=opB6ydhp1rfhZkQiU4AY&amp;branch=master" alt="Build Status"></a></li>
+<li><a href="https://codecov.io/github/adimajo/whiteapp_shiny?branch=master" class="external-link"><img src="https://codecov.io/gh/adimajo/whiteapp_shiny/branch/master/graph/badge.svg" alt="Coverage status"></a></li>
+</ul>
+</div>
   </div>
 </div>
 
 
       <footer><div class="copyright">
-  <p>Developed by  GRO.</p>
+  <p></p>
+<p>Developed by GRO.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
+</div></footer>
 </div>
-
-      </footer>
-</div>
-
-  
-
-
-  </body>
+</body>
 </html>
