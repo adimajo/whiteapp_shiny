@@ -53,7 +53,7 @@ jobs:
           mkdir docs
           git checkout master -- docs README.md
           git add docs
-          if ! git diff-index --quiet HEAD -- ; then git commit -am "Rollout version ${{ env.APPLICATION_TAG_VERSION }}" && git push origin pages; else echo "Nothing to push"; fi
+          if ! git diff-index --quiet HEAD -- ; then git commit -am "Rollout version ${{ env.APPLICATION_TAG_VERSION }}" && git push origin pages --force; else echo "Nothing to push"; fi
           git checkout master
       - name: Check package (as CRAN)
         run: devtools::check(document = FALSE, args = "--no-tests", error_on = "warning")
