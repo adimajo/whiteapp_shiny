@@ -63,31 +63,33 @@
 </h1></div>
 <p>The <code>WhiteApp</code> package / shiny app is a template of a simple Shiny app which displays current versions of R and installed packages. All functions necessary to the app are created in an R package to keep things tidy and well documented (thus using the standard tools for R packages), making the Shiny ui / server scripts merely executors of functions defined in the <code>WhiteApp</code> package. The template ships with a Gitlab CI pipeline (which lints the code, builds the package, document it, runs CRAN checks, tests, computes test coverage, checks on rhub on different platforms as well as on Sonarqube, builds a docker container and deploys it), a Github Actions pipeline (which lints, documents and upload the documentation as github page, checks the package, computes tests and coverage, checks on rhbub for different platforms, builds a docker container and uploads it to Github), and a Travis pipeline (for elegant display of code coverage).</p>
 <div class="section level2">
-<h2 id="using-the-gitlab-ci-pipeline">Using the Gitlab CI pipeline<a class="anchor" aria-label="anchor" href="#using-the-gitlab-ci-pipeline"></a>
-</h2>
-</div>
-<div class="section level2">
 <h2 id="using-the-github-actions-pipeline">Using the Github Actions pipeline<a class="anchor" aria-label="anchor" href="#using-the-github-actions-pipeline"></a>
 </h2>
 <div class="section level3">
 <h3 id="secrets">Secrets<a class="anchor" aria-label="anchor" href="#secrets"></a>
 </h3>
-<p>Two Github Secrets need to be set.</p>
-<p>APP_TOKEN: the App, or Personal Token, to push the docs to the pages branch.</p>
+<p>One Github Secret needs to be set:</p>
 <p>RHUB_TOKEN: the token associated with the package’s maintainer’s email address, validated via <code><a href="https://r-hub.github.io/rhub/reference/validate_email.html" class="external-link">rhub::validate_email()</a></code>.</p>
 </div>
 </div>
 <div class="section level2">
-<h2 id="using-the-gitlab-ci-pipeline-1">Using the Gitlab CI pipeline<a class="anchor" aria-label="anchor" href="#using-the-gitlab-ci-pipeline-1"></a>
+<h2 id="using-the-gitlab-ci-pipeline">Using the Gitlab CI pipeline<a class="anchor" aria-label="anchor" href="#using-the-gitlab-ci-pipeline"></a>
 </h2>
 <div class="section level3">
 <h3 id="variables">Variables<a class="anchor" aria-label="anchor" href="#variables"></a>
 </h3>
+<p>BOOT_GITLAB_DOCS_REPO</p>
+<p>BOOT_GITLAB_SRV_ACCOUNT</p>
+<p>BOOT_GITLAB_CAGIP_TOKEN</p>
+<p>BOOT_SONAR_TOKEN</p>
+<p>BOOT_SONAR_INSTANCE</p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="using-the-travis-pipeline">Using the Travis pipeline<a class="anchor" aria-label="anchor" href="#using-the-travis-pipeline"></a>
 </h2>
+<p>Connect to <a href="https://app.travis-ci.com/" class="external-link">app.travis-ci.com</a> and <a href="https://app.codecov.io" class="external-link">app.codecov.io</a> to connect your repo.</p>
+<p>The pipeline installs devtools, the dependencies of the application, documents it, checks it, computes code coverage and sends it to <a href="https://app.codecov.io" class="external-link">app.codecov.io</a> to display it nicely on this README.</p>
 </div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
