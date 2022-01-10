@@ -6,15 +6,11 @@
 
 The `WhiteApp` package / shiny app is a template of a simple Shiny app which displays current versions of R and installed packages. All functions necessary to the app are created in an R package to keep things tidy and well documented (thus using the standard tools for R packages), making the Shiny ui / server scripts merely executors of functions defined in the `WhiteApp` package. The template ships with a Gitlab CI pipeline (which lints the code, builds the package, document it, runs CRAN checks, tests, computes test coverage, checks on rhub on different platforms as well as on Sonarqube, builds a docker container and deploys it), a Github Actions pipeline (which lints, documents and upload the documentation as github page, checks the package, computes tests and coverage, checks on rhbub for different platforms, builds a docker container and uploads it to Github), and a Travis pipeline (for elegant display of code coverage). 
 
-## Using the Gitlab CI pipeline
-
 ## Using the Github Actions pipeline
 
 ### Secrets
 
-Two Github Secrets need to be set.
-
-APP_TOKEN: the App, or Personal Token, to push the docs to the pages branch.
+One Github Secret needs to be set:
 
 RHUB_TOKEN: the token associated with the package's maintainer's email address, validated via `rhub::validate_email()`.
 
@@ -22,8 +18,22 @@ RHUB_TOKEN: the token associated with the package's maintainer's email address, 
 
 ### Variables
 
+BOOT_GITLAB_DOCS_REPO
+
+BOOT_GITLAB_SRV_ACCOUNT
+
+BOOT_GITLAB_CAGIP_TOKEN
+
+BOOT_SONAR_TOKEN
+
+BOOT_SONAR_INSTANCE
+
 ## Using the Travis pipeline
 
+Connect to [app.travis-ci.com](https://app.travis-ci.com/) and [app.codecov.io](https://app.codecov.io) to connect your repo.
+
+The pipeline installs devtools, the dependencies of the application, documents it, checks it, computes code coverage
+and sends it to [app.codecov.io](https://app.codecov.io) to display it nicely on this README.
 
 ## Installation
 
