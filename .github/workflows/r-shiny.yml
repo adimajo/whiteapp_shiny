@@ -52,7 +52,7 @@ jobs:
           git checkout pages
           rm -rf docs
           mkdir docs
-          git checkout master -- docs
+          git checkout master -- docs README.md
           git add docs
           if ! git diff-index --quiet HEAD -- ; then git commit -am "Rollout version $APPLICATION_TAG_VERSION" && git push origin pages; else echo "Nothing to push"; fi
           git checkout master

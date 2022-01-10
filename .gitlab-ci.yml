@@ -6,9 +6,10 @@
   image:
     name: layer-kraft.registry.saas.cagip.group.gca/ci-tools:latest
 
-.common_tag: &common_tag
+.common_tags: &common_tags
   tags:
   - kubernetes
+  - docker
 
 .common_deploy: &common_deploy
   before_script:
@@ -62,7 +63,7 @@ lint:
   extends: .before_script_template
   stage: lint
   <<: *common_r
-  <<: *common_tag
+  <<: *common_tags
   script:
     - r -e "install.packages('styler')"
     - r -e "install.packages('lintr')"
@@ -83,7 +84,7 @@ buildbinary:
   extends: .before_script_template
   stage: build package
   <<: *common_r
-  <<: *common_tag
+  <<: *common_tags
   script:
     - r -e 'devtools::build(binary = TRUE)'
     - r -e 'devtools::install()'
@@ -106,7 +107,7 @@ documentation:
   extends: .before_script_template
   stage: document
   <<: *common_r
-  <<: *common_tag
+  <<: *common_tags
   script:
     - . ./build.env
     - 'echo GENERATED TAG : $APPLICATION_TAG_VERSION'
@@ -140,7 +141,7 @@ documentation:
 
 checkerrors:
   <<: *common_r
-  <<: *common_tag
+  <<: *common_tags
   extends: .before_script_template
   stage: check
   script:
@@ -156,7 +157,7 @@ checkerrors:
 
 checkwarnings:
   <<: *common_r
-  <<: *common_tag
+  <<: *common_tags
   extends: .before_script_template
   stage: check
   script:
@@ -173,7 +174,7 @@ checkwarnings:
 
 checknotes:
   <<: *common_r
-  <<: *common_tag
+  <<: *common_tags
   extends: .before_script_template
   stage: check
   script:
@@ -190,7 +191,7 @@ checknotes:
 
 unittestserrors:
   <<: *common_r
-  <<: *common_tag
+  <<: *common_tags
   extends: .before_script_template
   stage: test
   script:
@@ -206,7 +207,7 @@ unittestserrors:
 
 unittestswarnings:
   <<: *common_r
-  <<: *common_tag
+  <<: *common_tags
   extends: .before_script_template
   stage: test
   script:
@@ -226,7 +227,7 @@ coverage:
     paths:
       - coverage.xml
   <<: *common_r
-  <<: *common_tag
+  <<: *common_tags
   extends: .before_script_template
   stage: coverage
   script:
@@ -252,8 +253,8 @@ coverage:
 quality_check:
   stage: sonar_check
   image:
-    name: docker-remote.registry.saas.cagip.group.gca/sonarsource/sonar-scanner-cli:4.6
-  <<: *common_tag
+    name: ${DOCKER_REGISTRY_BIS}sonarsource/sonar-scanner-cli:4.6
+  <<: *common_tags
   variables:
     SONAR_TOKEN: "${BOOT_SONAR_TOKEN}"
     SONAR_HOST_URL: "${BOOT_SONAR_INSTANCE}"
@@ -278,13 +279,10 @@ quality_check:
 
 build whiteapp:
   stage: build docker
-  <<: *common_tag
+  <<: *common_tags
   image:
-    name: docker-remote.registry.saas.cagip.group.gca/kaniko-project/executor:debug-v1.0.0
+    name: ${DOCKER_REGISTRY_BIS}kaniko-project/executor:debug-v1.0.0
     entrypoint: [""]
-  variables:
-    TEST_STATIC: 0
-    TEST_DB: 1
   script:
     - . ./build.env
     - mkdir -p /kaniko/.docker
@@ -312,7 +310,8 @@ build whiteapp:
 deploy_dev:
   stage: deploy_dev
   <<: *ci_tools
-  <<: *common_tag
+  tags:
+  - kubernetes
   <<: *common_deploy
   script:
     - . ./build.env
@@ -341,7 +340,8 @@ promote_staging:
   stage: promote_staging
   when: manual
   <<: *ci_tools
-  <<: *common_tag
+  tags:
+  - kubernetes
   variables:
     CREDS: "${BOOT_ARTI_USER}:${BOOT_ARTI_PASSWORD}"
     SOURCE_REPO: "${BOOT_ARTI_SCRATCH_REGISTRY}"
@@ -357,7 +357,8 @@ promote_stable:
   stage: promote_stable
   when: manual
   <<: *ci_tools
-  <<: *common_tag
+  tags:
+  - kubernetes
   variables:
     SOURCE_REPO: "${BOOT_ARTI_STAGING_REGISTRY}"
     TARGET_REPO: "${BOOT_ARTI_STABLE_REGISTRY}"
