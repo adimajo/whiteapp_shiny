@@ -280,6 +280,14 @@ quality_check:
 
 build whiteapp:
   stage: build docker
+  rules:
+    - if: $CI_COMMIT_REF_NAME == "master" && $BOOT_GITLAB_SRV_ACCOUNT == null
+      changes:
+        - .gitlab-ci.yml
+        - Dockerfile
+        - DESCRIPTION
+        - R/**/*
+        - inst/**/*
   <<: *common_tags
   image:
     name: ${DOCKER_REGISTRY_BIS}kaniko-project/executor:debug-v1.0.0
@@ -298,21 +306,12 @@ build whiteapp:
        echo "${KANIKOCFG}" >> /kaniko/.docker/config.json
     - wget -qO - http://crl-priv-pki.credit-agricole.fr/ca/cacreditagricoleserver.crt >> /kaniko/ssl/certs/additional-ca-cert-bundle.crt
     - /kaniko/executor --context . --dockerfile Dockerfile $KANIKOPROXYBUILDARGS --build-arg DOCKER_REGISTRY_BIS=$DOCKER_REGISTRY_BIS --destination $BOOT_ARTI_SCRATCH_REGISTRY.$BOOT_ARTI_REGISTRY/$BOOT_ARTI_REPO:$APPLICATION_TAG_VERSION
-  only:
-    refs:
-      - master
-    changes:
-      - .gitlab-ci.yml
-      - Dockerfile
-      - DESCRIPTION
-      - R/**/*
-      - inst/**/*
 
 build_and_deploy_gitlab_registry:
   stage: deploy_dev
   rules:
     - if: $CI_COMMIT_REF_NAME == "master" && $BOOT_GITLAB_SRV_ACCOUNT == null
-  <<: *common_tag
+  <<: *common_tags
   image: docker:latest
   services:
     - docker:dind
@@ -329,7 +328,7 @@ build_and_deploy_dockerhub:
   stage: deploy_dev
   rules:
     - if: $CI_COMMIT_REF_NAME == "master" && $BOOT_GITLAB_SRV_ACCOUNT == null
-  <<: *common_tag
+  <<: *common_tags
   image: docker:latest
   services:
     - docker:dind
@@ -343,7 +342,13 @@ build_and_deploy_dockerhub:
 deploy_dev:
   stage: deploy_dev
   rules:
-    - if: $BOOT_GITLAB_SRV_ACCOUNT
+    - if: $CI_COMMIT_REF_NAME == "master" && $BOOT_GITLAB_SRV_ACCOUNT
+      changes:
+        - .gitlab-ci.yml
+        - Dockerfile
+        - DESCRIPTION
+        - R/**/*
+        - inst/**/*
   <<: *ci_tools
   tags:
   - kubernetes
@@ -361,20 +366,11 @@ deploy_dev:
         else
             echo "Nothing to push"
         fi
-  only:
-    refs:
-      - master
-    changes:
-      - .gitlab-ci.yml
-      - Dockerfile
-      - DESCRIPTION
-      - R/**/*
-      - inst/**/*
 
 promote_staging:
   stage: promote_staging
   rules:
-    - if: $BOOT_GITLAB_SRV_ACCOUNT
+    - if: $CI_COMMIT_REF_NAME == "master" && $BOOT_GITLAB_SRV_ACCOUNT
       when: manual
   <<: *ci_tools
   tags:
@@ -387,13 +383,11 @@ promote_staging:
     - . ./build.env
     - 'echo GENERATED TAG : $APPLICATION_TAG_VERSION'
     - "curl -S -k -u ${CREDS} -XPOST https://$BOOT_ARTI_REGISTRY/api/docker/$SOURCE_REPO/v2/promote -H \"Content-Type: application/json\" -d\"{\"targetRepo\":\"${TARGET_REPO}\",\"dockerRepository\":\"${BOOT_ARTI_REPO}\",\"tag\":\"${APPLICATION_TAG_VERSION}\",\"copy\":true}\""
-  only:
-   - master
 
 promote_stable:
   stage: promote_stable
   rules:
-    - if: $BOOT_GITLAB_SRV_ACCOUNT
+    - if: $CI_COMMIT_REF_NAME == "master" && $BOOT_GITLAB_SRV_ACCOUNT
       when: manual
   <<: *ci_tools
   tags:
@@ -406,5 +400,3 @@ promote_stable:
     - . ./build.env
     - 'echo GENERATED TAG : $APPLICATION_TAG_VERSION'
     - docker-promote --tag=$APPLICATION_TAG_VERSION
-  only:
-   - master
