@@ -6,6 +6,9 @@
   image:
     name: layer-kraft.registry.saas.cagip.group.gca/ci-tools:latest
 
+variables:
+  CURRENT_TAG: $CURRENT_TAG
+
 .common_tags: &common_tags
   tags:
   - $CURRENT_TAG
