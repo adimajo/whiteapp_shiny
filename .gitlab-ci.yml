@@ -8,8 +8,7 @@
 
 .common_tags: &common_tags
   tags:
-  - kubernetes
-  - docker
+  - $CURRENT_TAG
 
 .common_deploy: &common_deploy
   before_script:
@@ -99,11 +98,12 @@ buildbinary:
       - R/**/*
       - inst/**/*
 
-documentation:
+pages:
   artifacts:
     paths:
       - man
       - docs
+      - public
   extends: .before_script_template
   stage: document
   <<: *common_r
@@ -130,6 +130,7 @@ documentation:
         else
             echo "Nothing to push"
         fi
+    - cp -rf docs public
   only:
     refs:
       - branches
@@ -307,8 +308,42 @@ build whiteapp:
       - R/**/*
       - inst/**/*
 
+build_and_deploy_gitlab_registry:
+  stage: deploy_dev
+  rules:
+    - if: $CI_COMMIT_REF_NAME == "master" && $BOOT_GITLAB_SRV_ACCOUNT == null
+  <<: *common_tag
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - - . ./build.env
+    - cd whiteapp
+    - echo $CI_REGISTRY_USER
+    - docker build --pull -t "${CI_REGISTRY}/${DOCKER_CI_REGISTRY_USER}/${CI_PROJECT_NAME}:${APPLICATION_TAG_VERSION}" .
+    - docker push "${CI_REGISTRY}/${DOCKER_CI_REGISTRY_USER}/${CI_PROJECT_NAME}:${APPLICATION_TAG_VERSION}"
+
+build_and_deploy_dockerhub:
+  stage: deploy_dev
+  rules:
+    - if: $CI_COMMIT_REF_NAME == "master" && $BOOT_GITLAB_SRV_ACCOUNT == null
+  <<: *common_tag
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$DOCKER_CI_REGISTRY_USER" -p "$DOCKER_CI_REGISTRY_PASSWORD" $DOCKER_CI_REGISTRY
+  script:
+    - - . ./build.env
+    - docker build --pull -t "${DOCKER_CI_REGISTRY_USER}/${CI_PROJECT_NAME}:${APPLICATION_TAG_VERSION}" .
+    - docker push "${DOCKER_CI_REGISTRY_USER}/${CI_PROJECT_NAME}:${APPLICATION_TAG_VERSION}"
+
 deploy_dev:
   stage: deploy_dev
+  rules:
+    - if: $BOOT_GITLAB_SRV_ACCOUNT
   <<: *ci_tools
   tags:
   - kubernetes
@@ -338,7 +373,9 @@ deploy_dev:
 
 promote_staging:
   stage: promote_staging
-  when: manual
+  rules:
+    - if: $BOOT_GITLAB_SRV_ACCOUNT
+      when: manual
   <<: *ci_tools
   tags:
   - kubernetes
@@ -355,7 +392,9 @@ promote_staging:
 
 promote_stable:
   stage: promote_stable
-  when: manual
+  rules:
+    - if: $BOOT_GITLAB_SRV_ACCOUNT
+      when: manual
   <<: *ci_tools
   tags:
   - kubernetes
