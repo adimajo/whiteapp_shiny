@@ -1,5 +1,9 @@
 [![R Shiny docker](https://github.com/adimajo/whiteapp_shiny/actions/workflows/r-shiny.yml/badge.svg)](https://github.com/adimajo/whiteapp_shiny/actions/workflows/r-shiny.yml)
-[![Build Status](https://app.travis-ci.com/adimajo/whiteapp_shiny.svg?token=opB6ydhp1rfhZkQiU4AY&branch=master)](https://app.travis-ci.com/adimajo/whiteapp_shiny)[![Coverage status](https://codecov.io/gh/adimajo/whiteapp_shiny/branch/master/graph/badge.svg)](https://codecov.io/github/adimajo/whiteapp_shiny?branch=master)
+[![Build Status](https://app.travis-ci.com/adimajo/whiteapp_shiny.svg?token=opB6ydhp1rfhZkQiU4AY&branch=master)](https://app.travis-ci.com/adimajo/whiteapp_shiny)
+[![pipeline status](https://gitlab.com/adimajo/whiteapp_shiny/badges/master/pipeline.svg)](https://gitlab.com/adimajo/whiteapp_shiny/-/commits/master)
+
+[![Coverage status](https://codecov.io/gh/adimajo/whiteapp_shiny/branch/master/graph/badge.svg)](https://codecov.io/github/adimajo/whiteapp_shiny?branch=master)
+[![coverage report](https://gitlab.com/adimajo/whiteapp_shiny/badges/master/coverage.svg)](https://gitlab.com/adimajo/whiteapp_shiny/-/commits/master)
 
 # WhiteApp R Shiny
 
