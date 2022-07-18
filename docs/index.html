@@ -64,8 +64,14 @@
 </h1></div>
 <p>The <code>WhiteApp</code> package / shiny app is a template of a simple Shiny app which displays current versions of R and installed packages. All functions necessary to the app are created in an R package to keep things tidy and well documented (thus using the standard tools for R packages), making the Shiny ui / server scripts merely executors of functions defined in the <code>WhiteApp</code> package. The template ships with a Gitlab CI pipeline (which lints the code, builds the package, document it, runs CRAN checks, tests, computes test coverage, checks on rhub on different platforms as well as on Sonarqube, builds a docker container and deploys it), a Github Actions pipeline (which lints, documents and upload the documentation as github page, checks the package, computes tests and coverage, checks on rhbub for different platforms, builds a docker container and uploads it to Github), and a Travis pipeline (for elegant display of code coverage).</p>
 <div class="section level2">
+<h2 id="sonarcloud">Sonarcloud<a class="anchor" aria-label="anchor" href="#sonarcloud"></a>
+</h2>
+<p>If you want to leverage the static code analysis (and nice display!) provided by Sonarcloud, link your Github account to Sonarcloud at <a href="https://sonarcloud.io/" class="external-link">sonarcloud.io</a>.</p>
+</div>
+<div class="section level2">
 <h2 id="using-the-github-actions-pipeline">Using the Github Actions pipeline<a class="anchor" aria-label="anchor" href="#using-the-github-actions-pipeline"></a>
 </h2>
+<p>Nothing to do! If you import your project in Sonarcloud, it will automatically trigger its analysis at each push (see “SonarCloud Automatic Analysis” under Administration &gt; Analysis Method).</p>
 <div class="section level3">
 <h3 id="secrets">Secrets<a class="anchor" aria-label="anchor" href="#secrets"></a>
 </h3>
@@ -79,11 +85,27 @@
 <div class="section level3">
 <h3 id="variables">Variables<a class="anchor" aria-label="anchor" href="#variables"></a>
 </h3>
-<p>BOOT_GITLAB_DOCS_REPO</p>
-<p>BOOT_GITLAB_SRV_ACCOUNT</p>
-<p>BOOT_GITLAB_CAGIP_TOKEN</p>
-<p>BOOT_SONAR_TOKEN</p>
-<p>BOOT_SONAR_INSTANCE</p>
+<p>Set the following environment variables in Gitlab’s UI under Settings &gt; CI/CD. These are not hardcoded into the pipeline since I use the same pipeline at Crédit Agricole S.A. with our own instances of Gitlab, Gitlab runners, Sonar, etc.</p>
+<p>If you wish to deploy on Dockerhub, you should have a repository set up with the same name as your repository.</p>
+<ul>
+<li>
+<code>CURRENT_TAG</code>: the tag of an available public Gitlab runner, e.g. <code>docker</code>
+</li>
+<li>
+<code>PYPI_REMOTE</code>: the URL to your favorite PyPi remote, e.g. <code>https://pypi.org/simple</code>
+</li>
+<li>
+<code>SONAR_HOST_URL</code>: <code>https://sonarcloud.io/</code>
+</li>
+<li>
+<code>SONAR_TOKEN</code>: you can obtain this token by logging in to <a href="https://sonarcloud.io/" class="external-link">sonarcloud.io</a> and generating a key.</li>
+<li>
+<code>DOCKER_CI_REGISTRY</code>: the Docker registry on which to upload the image, e.g. index.docker.io or registry.gitlab.com</li>
+<li>
+<code>DOCKER_CI_REGISTRY_USER</code>: your registry username, e.g. Gitlab or Dockerhub username</li>
+<li>
+<code>DOCKER_CI_REGISTRY_PASSWORD</code>: your registry password (or access token), e.g. Gitlab or Dockerhub username</li>
+</ul>
 </div>
 </div>
 <div class="section level2">
@@ -104,7 +126,7 @@
 <p>If this didn’t go well, use <code><a href="https://rstudio.github.io/renv/reference/restore.html" class="external-link">renv::restore()</a></code>.</p>
 </div>
 <div class="section level3">
-<h3 id="installation-locale-sans-internet">Installation “locale” sans internet<a class="anchor" aria-label="anchor" href="#installation-locale-sans-internet"></a>
+<h3 id="local-installation-w-o--internet-access">“Local” installation w.o. internet access<a class="anchor" aria-label="anchor" href="#local-installation-w-o--internet-access"></a>
 </h3>
 <div class="section level4">
 <h4 id="dependencies">Dependencies<a class="anchor" aria-label="anchor" href="#dependencies"></a>
@@ -117,6 +139,11 @@
 <p>It is also possible to get a portable version of R, <a href="https://sourceforge.net/projects/rportable/" class="external-link">downloadable from Sourceforge</a>.</p>
 </div>
 </div>
+</div>
+<div class="section level2">
+<h2 id="disclaimer">Disclaimer<a class="anchor" aria-label="anchor" href="#disclaimer"></a>
+</h2>
+<p>Supported by Groupe Crédit Agricole; analyses and opinions of the author(s) expressed in this work are their own.</p>
 </div>
 </div>
 
@@ -166,7 +193,7 @@
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer>
