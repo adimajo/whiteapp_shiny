@@ -105,6 +105,7 @@ pages:
   stage: document
   rules:
     - if: $BOOT_GITLAB_SRV_ACCOUNT == null
+  extends: .before_script_template
   <<: *common_r
   <<: *common_tags
   script:
