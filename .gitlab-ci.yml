@@ -105,8 +105,8 @@ pages:
   stage: document
   rules:
     - if: $BOOT_GITLAB_SRV_ACCOUNT == null
-  <<: *common_python
-  <<: *common_tag
+  <<: *common_r
+  <<: *common_tags
   script:
     - . ./build.env
     - 'echo GENERATED TAG : $APPLICATION_TAG_VERSION'
