@@ -102,13 +102,33 @@ buildbinary:
       - inst/**/*
 
 pages:
+  stage: document
+  rules:
+    - if: $BOOT_GITLAB_SRV_ACCOUNT == null
+  <<: *common_python
+  <<: *common_tag
+  script:
+    - . ./build.env
+    - 'echo GENERATED TAG : $APPLICATION_TAG_VERSION'
+    - apt-get -y install libfontconfig1-dev libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev git
+    - r -e "install.packages('pkgdown')"
+    - r inst/pipeline/document.R
+    - mv docs public
   artifacts:
     paths:
-      - man
-      - docs
       - public
+    expire_in: 1 week
+
+document_cagip:
   extends: .before_script_template
   stage: document
+  rules:
+    - if: $BOOT_GITLAB_SRV_ACCOUNT
+      changes:
+        - .gitlab-ci.yml
+        - DESCRIPTION
+        - R/**/*
+        - inst/**/*
   <<: *common_r
   <<: *common_tags
   script:
@@ -134,14 +154,6 @@ pages:
             echo "Nothing to push"
         fi
     - cp -rf docs public
-  only:
-    refs:
-      - branches
-    changes:
-      - .gitlab-ci.yml
-      - DESCRIPTION
-      - R/**/*
-      - inst/**/*
 
 checkerrors:
   <<: *common_r
@@ -260,8 +272,6 @@ quality_check:
     name: ${DOCKER_REGISTRY_BIS}sonarsource/sonar-scanner-cli:4.6
   <<: *common_tags
   variables:
-    SONAR_TOKEN: "${BOOT_SONAR_TOKEN}"
-    SONAR_HOST_URL: "${BOOT_SONAR_INSTANCE}"
     SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
     GIT_DEPTH: 0  # Tells git to fetch all the branches of the project, required by the analysis task
     SONAR_SCANNER_OPTS: "-Djavax.net.ssl.trustStore=cacerts"
@@ -271,7 +281,7 @@ quality_check:
     - wget -qO - http://crl-priv-pki.credit-agricole.fr/ca/cacreditagricoleserver.crt >> cacreditagricoleserver.crt
     - apk --update add java-common
     - keytool -import -alias mycert -file cacreditagricoleserver.crt -storetype jks -trustcacerts -noprompt -keypass keypass -keystore cacerts -storepass test@123
-    - sonar-scanner -Dsonar.exclusions=inst/**,tests/**,docs/**,renv/**,coverage.xml,README.md -Dsonar.coverageReportPaths=coverage.xml -Dsonar.qualitygate.wait=true -Dsonar.projectKey=$BOOT_SONAR_KEY -Dsonar.projectVersion=$APPLICATION_TAG_VERSION
+    - sonar-scanner -Dsonar.exclusions=inst/**,tests/**,docs/**,renv/**,coverage.xml,README.md -Dsonar.organization=${DOCKER_CI_REGISTRY_USER} -Dsonar.coverageReportPaths=coverage.xml -Dsonar.qualitygate.wait=true -Dsonar.projectKey=${DOCKER_CI_REGISTRY_USER}_${CI_PROJECT_NAME} -Dsonar.projectVersion=$APPLICATION_TAG_VERSION
   only:
     refs:
       - master
