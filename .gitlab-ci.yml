@@ -171,6 +171,7 @@ checkerrors:
       - DESCRIPTION
       - R/**/*
       - inst/**/*
+  dependencies: []
 
 checkwarnings:
   <<: *common_r
@@ -188,6 +189,7 @@ checkwarnings:
       - DESCRIPTION
       - R/**/*
       - inst/**/*
+  dependencies: []
 
 checknotes:
   <<: *common_r
@@ -205,6 +207,7 @@ checknotes:
       - DESCRIPTION
       - R/**/*
       - inst/**/*
+  dependencies: []
 
 unittestserrors:
   <<: *common_r
@@ -248,14 +251,8 @@ coverage:
   extends: .before_script_template
   stage: coverage
   script:
-    - apt-get -y install libfontconfig1-dev
-    - apt-get -y install libharfbuzz-dev libfribidi-dev
-    - apt-get -y install libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev
-    - r -e "install.packages('renv')"
-    - r -e 'renv::load()'
-    - r -e 'renv::restore()'
-    - r -e 'renv::install("covr")'
-    - r -e 'renv::install("DT")'
+    - apt-get -y install libfontconfig1-dev libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev
+    - r -e 'install.packages("covr", "DT")'
     - r inst/pipeline/sonarqube.R
   only:
     refs:
