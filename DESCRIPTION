@@ -16,4 +16,5 @@ Imports:
   shiny
 Suggests: 
   testthat (>= 2.1.0),
-  covr
+  covr,
+  shinytest
