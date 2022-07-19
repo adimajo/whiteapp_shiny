@@ -30,7 +30,10 @@ hacked_sonarqube <- function(cov, filename = "sonarqube.xml") {
   invisible(d)
 }
 
-the_coverage <- covr::package_coverage(quiet = FALSE, clean = FALSE)
+the_coverage <- covr::package_coverage(
+  quiet = FALSE,
+  clean = FALSE,
+  line_exclusions = list("R/runDashboard.R" = 8:13))
 
 print(the_coverage)
 

@@ -15,3 +15,19 @@ test_that("find_session_info works", {
   expect_true(is.data.frame(session_info))
   expect_length(session_info, 2)
 })
+
+test_that("server works", {
+  source("inst/dashboard/server.R")
+  shiny::testServer(server, {})
+})
+
+test_that("App works", {
+  shinytest::ShinyDriver$new(path=system.file("dashboard",
+                                              package = "WhiteAppRShiny"),
+                             loadTimeout = 1e+05)
+  shinytest::ShinyDriver$stop()
+})
+
+test_that("runDashboard works", {
+  R.utils::withTimeout(runDashboard(), timeout=1)
+})

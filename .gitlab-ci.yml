@@ -252,7 +252,8 @@ coverage:
   stage: coverage
   script:
     - apt-get -y install libfontconfig1-dev libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev
-    - r -e 'install.packages("covr", "DT")'
+    - r -e 'install.packages(c("DT"))'
+    - r -e 'shinytest::installDependencies()'
     - r inst/pipeline/sonarqube.R
   only:
     refs:
