@@ -216,6 +216,7 @@ unittestserrors:
   stage: test
   script:
     - r -e 'if (any(as.data.frame(devtools::test())[["error"]])) stop("Some tests failed.")'
+  allow_failure: true
   only:
     refs:
       - branches

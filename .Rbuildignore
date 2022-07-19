@@ -2,7 +2,6 @@
 ^renv\.lock$
 ^.*\.Rproj$
 ^\.Rproj\.user$
-^inst/powerpoint/*.png$
 ^docs$
 ^pkgdown$
 ^scripts$
