@@ -1,0 +1,415 @@
+.common_r: &common_r
+  image:
+    name: ${DOCKER_REGISTRY}r-base:4.0.5
+
+.ci_tools: &ci_tools
+  image:
+    name: layer-kraft.registry.saas.cagip.group.gca/ci-tools:latest
+
+variables:
+  CURRENT_TAG: $CURRENT_TAG
+
+.common_tags: &common_tags
+  tags:
+  - $CURRENT_TAG
+
+.common_deploy: &common_deploy
+  before_script:
+    # Install ssh-agent if not already installed, it is required by Docker.
+    # (change apt-get to yum if you use a CentOS-based image)
+    - 'which ssh-agent || ( apk --update add openssh-client )'
+
+    # Run ssh-agent (inside the build environment)
+    - eval $(ssh-agent -s)
+
+    # Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
+    - echo "$GITLAB_SSH_KEY" | tr -d ' ' | base64 -d | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan gitlab.ca.cib >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+    - apk add --no-cache git
+    - git config --global user.name "$GITLAB_USER_NAME"
+    - git config --global user.email "$GITLAB_USER_EMAIL"
+
+stages:
+  - lint
+  - build package
+  - document
+  - check
+  - test
+  - coverage
+  - checkrhub
+  - sonar_check
+  - build docker
+  - deploy_dev
+  - promote_staging
+  - promote_stable
+
+variables:
+  _R_CHECK_CRAN_INCOMING_: "false"
+  _R_CHECK_FORCE_SUGGESTS_: "true"
+  _R_CHECK_SYSTEM_CLOCK_: 0
+
+.before_script_template:
+  before_script:
+  - apt-get update
+  - apt-get -y install libxml2-dev libssl-dev libcurl4-openssl-dev libgit2-dev libssh2-1-dev pandoc qpdf
+  - r -e "install.packages('devtools')"
+  - r -e 'devtools::install_deps(dependencies = TRUE)'
+
+lint:
+  artifacts:
+    paths:
+      - lintr_out.json
+  extends: .before_script_template
+  stage: lint
+  <<: *common_r
+  <<: *common_tags
+  script:
+    - r -e "install.packages('styler')"
+    - r -e "install.packages('lintr')"
+    - r inst/pipeline/lint.R
+  only:
+    refs:
+      - branches
+    changes:
+      - .gitlab-ci.yml
+      - DESCRIPTION
+      - R/**/*
+      - inst/**/*
+
+buildbinary:
+  artifacts:
+    paths:
+      - build.env
+  extends: .before_script_template
+  stage: build package
+  <<: *common_r
+  <<: *common_tags
+  script:
+    - r -e 'devtools::build(binary = TRUE)'
+    - r -e 'devtools::install()'
+    - echo export APPLICATION_TAG_VERSION=`r -e 'library(WhiteAppRShiny); cat(find_packages_versions())'` >> build.env
+  only:
+    refs:
+      - branches
+    changes:
+      - .gitlab-ci.yml
+      - Dockerfile
+      - DESCRIPTION
+      - R/**/*
+      - inst/**/*
+
+pages:
+  stage: document
+  rules:
+    - if: $GITLAB_SRV_ACCOUNT == null
+  extends: .before_script_template
+  <<: *common_r
+  <<: *common_tags
+  script:
+    - . ./build.env
+    - 'echo GENERATED TAG : $APPLICATION_TAG_VERSION'
+    - apt-get -y install libfontconfig1-dev libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev git
+    - r -e "install.packages('pkgdown')"
+    - r inst/pipeline/document.R
+    - mv docs public
+  artifacts:
+    paths:
+      - public
+    expire_in: 1 week
+
+document_cagip:
+  extends: .before_script_template
+  stage: document
+  rules:
+    - if: $GITLAB_SRV_ACCOUNT
+      changes:
+        - .gitlab-ci.yml
+        - DESCRIPTION
+        - R/**/*
+        - inst/**/*
+  <<: *common_r
+  <<: *common_tags
+  script:
+    - . ./build.env
+    - 'echo GENERATED TAG : $APPLICATION_TAG_VERSION'
+    - apt-get -y install libfontconfig1-dev libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev git
+    - r -e "install.packages('pkgdown')"
+    - r inst/pipeline/document.R
+    - git config --global http.sslverify false
+    - git config --global user.name "$GITLAB_USER_NAME"
+    - git config --global user.email "$GITLAB_USER_EMAIL"
+    - git clone https://$GITLAB_SRV_ACCOUNT:$GITLAB_TOKEN@$GITLAB_DOCS_REPO docs_to_publish
+    - rm -rf docs_to_publish/public
+    - mkdir docs_to_publish/public
+    - cp -r docs/* docs_to_publish/public/
+    - cd docs_to_publish
+    - git add -A
+    - |-
+        if ! git diff-index --quiet HEAD --; then
+            git commit -am "Rollout version $APPLICATION_TAG_VERSION"
+            git push
+        else
+            echo "Nothing to push"
+        fi
+    - cp -rf docs public
+
+checkerrors:
+  <<: *common_r
+  <<: *common_tags
+  extends: .before_script_template
+  stage: check
+  script:
+    - r -e 'if (!identical(devtools::check(document = TRUE, args = "--no-tests", error_on = "never")[["errors"]], character(0))) stop("Check with Errors")'
+  only:
+    refs:
+      - branches
+    changes:
+      - .gitlab-ci.yml
+      - DESCRIPTION
+      - R/**/*
+      - inst/**/*
+  dependencies: []
+
+checkwarnings:
+  <<: *common_r
+  <<: *common_tags
+  extends: .before_script_template
+  stage: check
+  script:
+    - r -e 'if (!identical(devtools::check(document = TRUE, args = "--no-tests", error_on = "never")[["warnings"]], character(0))) stop("Check with Warnings")'
+  allow_failure: true
+  only:
+    refs:
+      - branches
+    changes:
+      - .gitlab-ci.yml
+      - DESCRIPTION
+      - R/**/*
+      - inst/**/*
+  dependencies: []
+
+checknotes:
+  <<: *common_r
+  <<: *common_tags
+  extends: .before_script_template
+  stage: check
+  script:
+    - r -e 'if (!identical(devtools::check(document = TRUE, args = "--no-tests", error_on = "never")[["notes"]], character(0))) stop("Check with Notes")'
+  allow_failure: true
+  only:
+    refs:
+      - branches
+    changes:
+      - .gitlab-ci.yml
+      - DESCRIPTION
+      - R/**/*
+      - inst/**/*
+  dependencies: []
+
+unittestserrors:
+  <<: *common_r
+  <<: *common_tags
+  extends: .before_script_template
+  stage: test
+  script:
+    - r -e 'if (any(as.data.frame(devtools::test())[["error"]])) stop("Some tests failed.")'
+  allow_failure: true
+  only:
+    refs:
+      - branches
+    changes:
+      - .gitlab-ci.yml
+      - DESCRIPTION
+      - R/**/*
+      - inst/**/*
+
+unittestswarnings:
+  <<: *common_r
+  <<: *common_tags
+  extends: .before_script_template
+  stage: test
+  script:
+    - r -e 'if (sum(as.data.frame(devtools::test())[["warning"]]) > 0) stop("Some tests yielded a warning.")'
+  allow_failure: true
+  only:
+    refs:
+      - branches
+    changes:
+      - .gitlab-ci.yml
+      - DESCRIPTION
+      - R/**/*
+      - inst/**/*
+
+coverage:
+  artifacts:
+    paths:
+      - coverage.xml
+  <<: *common_r
+  <<: *common_tags
+  extends: .before_script_template
+  stage: coverage
+  script:
+    - apt-get -y install libfontconfig1-dev libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev
+    - r -e 'install.packages(c("DT"))'
+    - r -e 'shinytest::installDependencies()'
+    - r inst/pipeline/sonarqube.R
+  only:
+    refs:
+      - branches
+    changes:
+      - .gitlab-ci.yml
+      - DESCRIPTION
+      - R/**/*
+      - inst/**/*
+  timeout: 3 hours
+
+quality_check:
+  stage: sonar_check
+  image:
+    name: ${DOCKER_REGISTRY_BIS}sonarsource/sonar-scanner-cli:4.6
+  <<: *common_tags
+  variables:
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
+    GIT_DEPTH: 0  # Tells git to fetch all the branches of the project, required by the analysis task
+    SONAR_SCANNER_OPTS: "-Djavax.net.ssl.trustStore=cacerts"
+  script:
+    - . ./build.env
+    - 'echo GENERATED TAG : $APPLICATION_TAG_VERSION'
+    - wget -qO - ${PKI}/cacreditagricoleserver.crt >> cacreditagricoleserver.crt
+    - apk --update add java-common
+    - keytool -import -alias mycert -file cacreditagricoleserver.crt -storetype jks -trustcacerts -noprompt -keypass keypass -keystore cacerts -storepass test@123
+    - sonar-scanner -Dsonar.exclusions=inst/**,tests/**,docs/**,renv/**,coverage.xml,README.md -Dsonar.organization=${DOCKER_CI_REGISTRY_USER} -Dsonar.coverageReportPaths=coverage.xml -Dsonar.qualitygate.wait=true -Dsonar.projectKey=${DOCKER_CI_REGISTRY_USER}_${CI_PROJECT_NAME} -Dsonar.projectVersion=$APPLICATION_TAG_VERSION
+  only:
+    refs:
+      - master
+    changes:
+      - .gitlab-ci.yml
+      - DESCRIPTION
+      - R/**/*
+      - inst/**/*
+
+build whiteapp:
+  stage: build docker
+  rules:
+    - if: $CI_COMMIT_REF_NAME == "master" && $GITLAB_SRV_ACCOUNT == null
+      changes:
+        - .gitlab-ci.yml
+        - Dockerfile
+        - DESCRIPTION
+        - R/**/*
+        - inst/**/*
+  <<: *common_tags
+  image:
+    name: ${DOCKER_REGISTRY_BIS}kaniko-project/executor:debug-v1.0.0
+    entrypoint: [""]
+  script:
+    - . ./build.env
+    - mkdir -p /kaniko/.docker
+    - |-
+       KANIKOPROXYBUILDARGS=""
+       KANIKOCFG="{\"auths\":{\"https://$ARTI_SCRATCH_REGISTRY.$ARTI_REGISTRY\":{\"auth\":\"$(echo -n $ARTI_USER:$ARTI_PASSWORD | base64 | tr -d '\n')\"}}}"
+       if [ "x${http_proxy}" != "x" -o "x${https_proxy}" != "x" ]; then
+         KANIKOCFG="${KANIKOCFG}, \"proxies\": { \"default\": { \"httpProxy\": \"${http_proxy}\", \"httpsProxy\": \"${https_proxy}\", \"noProxy\": \"${no_proxy}\"}}"
+         KANIKOPROXYBUILDARGS="--build-arg http_proxy=${http_proxy} --build-arg https_proxy=${https_proxy} --build-arg no_proxy=${no_proxy}"
+       fi
+       KANIKOCFG="${KANIKOCFG} }"
+       echo "${KANIKOCFG}" >> /kaniko/.docker/config.json
+    - wget -qO - ${PKI}/cacreditagricoleserver.crt >> /kaniko/ssl/certs/additional-ca-cert-bundle.crt
+    - /kaniko/executor --context . --dockerfile Dockerfile $KANIKOPROXYBUILDARGS --build-arg DOCKER_REGISTRY_BIS=$DOCKER_REGISTRY_BIS --destination $ARTI_SCRATCH_REGISTRY.$ARTI_REGISTRY/$ARTI_REPO:$APPLICATION_TAG_VERSION
+
+build_and_deploy_gitlab_registry:
+  stage: deploy_dev
+  rules:
+    - if: $CI_COMMIT_REF_NAME == "master" && $GITLAB_SRV_ACCOUNT == null
+  <<: *common_tags
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - - . ./build.env
+    - cd whiteapp
+    - echo $CI_REGISTRY_USER
+    - docker build --pull -t "${CI_REGISTRY}/${DOCKER_CI_REGISTRY_USER}/${CI_PROJECT_NAME}:${APPLICATION_TAG_VERSION}" .
+    - docker push "${CI_REGISTRY}/${DOCKER_CI_REGISTRY_USER}/${CI_PROJECT_NAME}:${APPLICATION_TAG_VERSION}"
+
+build_and_deploy_dockerhub:
+  stage: deploy_dev
+  rules:
+    - if: $CI_COMMIT_REF_NAME == "master" && $GITLAB_SRV_ACCOUNT == null
+  <<: *common_tags
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$DOCKER_CI_REGISTRY_USER" -p "$DOCKER_CI_REGISTRY_PASSWORD" $DOCKER_CI_REGISTRY
+  script:
+    - - . ./build.env
+    - docker build --pull -t "${DOCKER_CI_REGISTRY_USER}/${CI_PROJECT_NAME}:${APPLICATION_TAG_VERSION}" .
+    - docker push "${DOCKER_CI_REGISTRY_USER}/${CI_PROJECT_NAME}:${APPLICATION_TAG_VERSION}"
+
+deploy_dev:
+  stage: deploy_dev
+  rules:
+    - if: $CI_COMMIT_REF_NAME == "master" && $GITLAB_SRV_ACCOUNT
+      changes:
+        - .gitlab-ci.yml
+        - Dockerfile
+        - DESCRIPTION
+        - R/**/*
+        - inst/**/*
+  <<: *ci_tools
+  tags:
+  - kubernetes
+  <<: *common_deploy
+  script:
+    - . ./build.env
+    - 'echo GENERATED TAG : $APPLICATION_TAG_VERSION'
+    - git clone $GITLAB_DEPLOY_REPO yaml_deploy_folder
+    - cd yaml_deploy_folder/dev
+    - kustomize edit set image $ARTI_SCRATCH_REGISTRY.$ARTI_REGISTRY/$ARTI_REPO=$ARTI_SCRATCH_REGISTRY.$ARTI_REGISTRY/$ARTI_REPO:$APPLICATION_TAG_VERSION
+    - |-
+        if ! git diff-index --quiet HEAD --; then
+            git commit -am "Rollout version $APPLICATION_TAG_VERSION"
+            git push
+        else
+            echo "Nothing to push"
+        fi
+
+promote_staging:
+  stage: promote_staging
+  rules:
+    - if: $CI_COMMIT_REF_NAME == "master" && $GITLAB_SRV_ACCOUNT
+      when: manual
+  <<: *ci_tools
+  tags:
+  - kubernetes
+  variables:
+    CREDS: "${ARTI_USER}:${ARTI_PASSWORD}"
+    SOURCE_REPO: "${ARTI_SCRATCH_REGISTRY}"
+    TARGET_REPO: "${ARTI_STAGING_REGISTRY}"
+  script:
+    - . ./build.env
+    - 'echo GENERATED TAG : $APPLICATION_TAG_VERSION'
+    - "curl -S -k -u ${CREDS} -XPOST https://$ARTI_REGISTRY/api/docker/$SOURCE_REPO/v2/promote -H \"Content-Type: application/json\" -d\"{\"targetRepo\":\"${TARGET_REPO}\",\"dockerRepository\":\"${ARTI_REPO}\",\"tag\":\"${APPLICATION_TAG_VERSION}\",\"copy\":true}\""
+
+promote_stable:
+  stage: promote_stable
+  rules:
+    - if: $CI_COMMIT_REF_NAME == "master" && $GITLAB_SRV_ACCOUNT
+      when: manual
+  <<: *ci_tools
+  tags:
+  - kubernetes
+  variables:
+    SOURCE_REPO: "${ARTI_STAGING_REGISTRY}"
+    TARGET_REPO: "${ARTI_STABLE_REGISTRY}"
+    IMAGE: "${ARTI_REPO}"
+  script:
+    - . ./build.env
+    - 'echo GENERATED TAG : $APPLICATION_TAG_VERSION'
+    - docker-promote --tag=$APPLICATION_TAG_VERSION
