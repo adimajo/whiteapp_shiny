@@ -54,7 +54,7 @@ variables:
 .before_script_template:
   before_script:
   - apt-get update
-  - apt-get -y install libxml2-dev libssl-dev libcurl4-openssl-dev libgit2-dev libssh2-1-dev pandoc qpdf
+  - apt-get -y install libxml2-dev libssl-dev libcurl4-openssl-dev libgit2-dev libssh2-1-dev pandoc qpdf libfontconfig1-dev
   - r -e "install.packages('devtools')"
   - r -e 'devtools::install_deps(dependencies = TRUE)'
 
