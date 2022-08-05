@@ -28,8 +28,8 @@ test_that("app works", {
   expect_null(NULL)
 })
 
-test_that("runDashboard works", {
-  setTimeLimit(1, 1, T)
-  on.exit(setTimeLimit(Inf, Inf, F))
-  runDashboard()
-})
+# test_that("runDashboard works", {
+#   setTimeLimit(1, 1, T)
+#   on.exit(setTimeLimit(Inf, Inf, F))
+#   runDashboard()
+# })

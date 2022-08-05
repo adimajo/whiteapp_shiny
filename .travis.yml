@@ -1,3 +1,13 @@
+addons:
+  apt:
+    packages:
+	- libharfbuzz-dev
+	- libfribidi-dev
+	- libfreetype6-dev
+	- libpng-dev
+	- libtiff5-dev
+	- libjpeg-dev
+
 before_install:
   - Rscript -e "install.packages('devtools')"
   - Rscript -e "devtools::install_deps(dependencies=TRUE)"
