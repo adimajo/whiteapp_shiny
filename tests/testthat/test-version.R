@@ -22,9 +22,12 @@ test_that("server works", {
 })
 
 test_that("app works", {
-  shinytest::ShinyDriver$new(path=system.file("dashboard",
-                                              package = "WhiteAppRShiny"),
-                             loadTimeout = 1e+05)
+  shinytest::ShinyDriver$new(
+    path = system.file("dashboard",
+      package = "WhiteAppRShiny"
+    ),
+    loadTimeout = 1e+05
+  )
   expect_null(NULL)
 })
 
